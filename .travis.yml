@@ -21,7 +21,7 @@ script:
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
 
 before_install:
-  - pip install codecov
+  - pip install --user codecov
 
 after_success:
   - codecov

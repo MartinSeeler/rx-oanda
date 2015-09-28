@@ -77,3 +77,5 @@ lazy val pushGithubPages = ReleaseStep(
   action = Command.process("ghpagesPushSite", _),
   enableCrossBuild = false
 )
+
+addCommandAlias("travis", ";clean;coverage;test;coverageReport;coverageAggregate")

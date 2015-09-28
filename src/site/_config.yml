@@ -1,0 +1,8 @@
+title: RxOanda
+description: Oanda API wrapper implemented with akka-streams and akka-http.
+baseurl: "/rx-oanda"
+url: "https://martinseeler.github.io"
+markdown: kramdown
+highlighter: pygments
+kramdown:
+  input: GFM

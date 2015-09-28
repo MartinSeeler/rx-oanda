@@ -1,0 +1,94 @@
+//
+// Generals styles for material design light elements
+//
+
+// Page container
+
+.page-content{
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &.page-section {
+    margin-top: 25px;
+    border-radius: 2px;
+    padding: 80px 56px;
+    margin-bottom: 80px;
+  }
+}
+
+h4[id] {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s ease-in;
+}
+
+h4[id]::after {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  word-wrap: normal;
+  transition: opacity 0.2s ease-in;
+  -moz-font-feature-settings: 'liga';
+  -moz-osx-font-smoothing: grayscale;
+  vertical-align: text-top;
+  margin-left: 0.3em;
+  opacity: 0;
+  content: "link";
+}
+
+h4[id]:hover {
+  text-decoration-color: #424242;
+  cursor: pointer;
+}
+
+h4[id]:hover::after {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  display: inline-block;
+  word-wrap: normal;
+  transition: opacity 0.2s ease-in;
+  -moz-font-feature-settings: 'liga';
+  -moz-osx-font-smoothing: grayscale;
+  vertical-align: text-top;
+  margin-left: 0.3em;
+  opacity: 1;
+  content: "link";
+}
+
+// Cards styles
+
+.mdl-card {
+  min-height: 160px;
+}
+
+.mdl-card__title {
+  color: #000;
+  height: 64px;
+  background: transparent;
+
+  a {
+    text-decoration: none;
+    font-weight: inherit;
+  }
+}
+
+.mdl-card__menu {
+  color: #fff;
+}
+
+.post-button{
+  position: absolute;
+  right: 15px;
+  bottom: 25px;
+}

@@ -8,12 +8,20 @@ scalaVersion := "2.11.7"
 val akkaStreamV = "1.0"
 val akkaHttpV = "1.0"
 
-libraryDependencies ++= List(
-  "com.typesafe.akka" %% "akka-stream-experimental"  % akkaStreamV,
-  "com.typesafe.akka" %% "akka-http-experimental"    % akkaHttpV,
+resolvers +=
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-  "com.typesafe.akka" %% "akka-stream-testkit-experimental" % akkaStreamV  % "test",
-  "com.typesafe.akka" %% "akka-http-testkit-experimental"   % akkaHttpV    % "test"
+libraryDependencies ++= List(
+  "com.typesafe.akka" %% "akka-stream-experimental"          % akkaStreamV,
+  "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
+  "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV,
+
+  "io.circe" %% "circe-core" % "0.2.0-SNAPSHOT",
+  "io.circe" %% "circe-generic" % "0.2.0-SNAPSHOT",
+  "io.circe" %% "circe-jawn" % "0.2.0-SNAPSHOT",
+
+  "com.typesafe.akka" %% "akka-stream-testkit-experimental"  % akkaStreamV  % "test",
+  "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test"
 )
 
 organization := "io.martinseeler"

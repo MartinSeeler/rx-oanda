@@ -5,8 +5,8 @@ import sbtrelease.ReleaseStateTransformations._
 name := "rx-oanda"
 scalaVersion := "2.11.7"
 
-val akkaStreamV = "1.0"
-val akkaHttpV = "1.0"
+val akkaStreamV = "2.0.2"
+val akkaHttpV = "2.0.2"
 
 resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -16,9 +16,10 @@ libraryDependencies ++= List(
   "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
   "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV,
 
-  "io.circe" %% "circe-core" % "0.2.0-SNAPSHOT",
-  "io.circe" %% "circe-generic" % "0.2.0-SNAPSHOT",
-  "io.circe" %% "circe-jawn" % "0.2.0-SNAPSHOT",
+  "io.circe" %% "circe-core" % "0.2.1",
+  "io.circe" %% "circe-generic" % "0.2.1",
+  "io.circe" %% "circe-jawn" % "0.2.1",
+  "io.circe" %% "circe-parse" % "0.2.1",
 
   "com.typesafe.akka" %% "akka-stream-testkit-experimental"  % akkaStreamV  % "test",
   "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test"

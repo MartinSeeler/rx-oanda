@@ -7,22 +7,24 @@ scalaVersion := "2.11.7"
 
 val akkaStreamV = "2.0.2"
 val akkaHttpV = "2.0.2"
+val circeV = "0.2.1"
+val scalaTestV = "2.2.6"
 
 resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 libraryDependencies ++= List(
+  // Akka Streams and Akka Http
   "com.typesafe.akka" %% "akka-stream-experimental"          % akkaStreamV,
-  "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
-  "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaHttpV,
-
-  "io.circe" %% "circe-core" % "0.2.1",
-  "io.circe" %% "circe-generic" % "0.2.1",
-  "io.circe" %% "circe-jawn" % "0.2.1",
-  "io.circe" %% "circe-parse" % "0.2.1",
-
   "com.typesafe.akka" %% "akka-stream-testkit-experimental"  % akkaStreamV  % "test",
-  "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test"
+  "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
+  "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test",
+  // circe for decoding
+  "io.circe"          %% "circe-core"                        % circeV,
+  "io.circe"          %% "circe-generic"                     % circeV,
+  "io.circe"          %% "circe-parse"                       % circeV,
+  // testing
+  "org.scalatest"     %% "scalatest"                         % scalaTestV   % "test"
 )
 
 organization := "io.martinseeler"

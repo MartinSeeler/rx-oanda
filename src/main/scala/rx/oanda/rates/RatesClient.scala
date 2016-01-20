@@ -24,11 +24,9 @@ import akka.stream.io.Framing
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.data.Xor
-import cats.data.Xor.{Left, Right}
+import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
-import io.circe.parse._
 import rx.oanda.{Heartbeat, OandaEnvironment}
-import rx.oanda.errors.OandaError
 import rx.oanda.errors.OandaError.OandaErrorEntityConversion
 
 import scala.util.{Failure, Success}
@@ -44,12 +42,7 @@ object RatesClient {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes.log("data-bytes")
             .via(Framing.delimiter(ByteString("\n"), 1024)).log("frame-delimiter")
-            .map(_.utf8String).log("utf8")
-            .map(json ⇒ decode(json)(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode-xor")
-            .flatMapConcat {
-              case Left(e) ⇒ Source.failed(e)
-              case Right(x) ⇒ Source.single(x)
-            }
+            .via(CirceStreamSupport.decode(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode-xor")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.failed(new Exception("Unknown state in rates"))

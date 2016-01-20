@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.errors
+package rx.oanda.errors
 
 import akka.http.scaladsl.model.HttpEntity
 import akka.stream.scaladsl.Source
 import cats.data.Xor
-import cats.data.Xor.{Right, Left}
+import cats.data.Xor.{Left, Right}
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.parse._

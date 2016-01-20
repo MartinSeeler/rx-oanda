@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda
+package rx.oanda
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._

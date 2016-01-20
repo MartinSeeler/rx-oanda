@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.rates
+package rx.oanda.errors
 
-import io.circe.Decoder
-import io.circe.generic.semiauto._
-
-case class OandaTick(instrument: String, time: Long, bid: Double, ask: Double)
-
-object OandaTick {
-
-  implicit val decodeOandaTick: Decoder[OandaTick] = deriveFor[OandaTick].decoder
-
+case class OandaException(oandaError: OandaError) extends Exception {
+  override def getMessage: String = oandaError.message
 }

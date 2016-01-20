@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.accounts
+package rx.oanda.accounts
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class BaseAccount(
+case class Account(
   accountId: Long,
   accountName: String,
-  accountCurrency: String,
-  marginRate: Double
+  balance: Double,
+  unrealizedPl: Double,
+  realizedPl: Double,
+  marginUsed: Double,
+  marginAvail: Double,
+  openTrades: Int,
+  openOrders: Int,
+  marginRate: Double,
+  accountCurrency: String
 )
 
-object BaseAccount {
+object Account {
 
-  implicit val decodeBaseAccount: Decoder[BaseAccount] =
-    deriveFor[BaseAccount].decoder
-
-  implicit val decodeBaseAccounts =
-    Decoder.instance(_.get[Vector[BaseAccount]]("accounts"))
+  implicit val decodeAccount: Decoder[Account] =
+    deriveFor[Account].decoder
 
 }

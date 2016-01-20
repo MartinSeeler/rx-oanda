@@ -14,28 +14,15 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.accounts
+package rx.oanda.rates
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class Account(
-  accountId: Long,
-  accountName: String,
-  balance: Double,
-  unrealizedPl: Double,
-  realizedPl: Double,
-  marginUsed: Double,
-  marginAvail: Double,
-  openTrades: Int,
-  openOrders: Int,
-  marginRate: Double,
-  accountCurrency: String
-)
+case class OandaTick(instrument: String, time: Long, bid: Double, ask: Double)
 
-object Account {
+object OandaTick {
 
-  implicit val decodeAccount: Decoder[Account] =
-    deriveFor[Account].decoder
+  implicit val decodeOandaTick: Decoder[OandaTick] = deriveFor[OandaTick].decoder
 
 }

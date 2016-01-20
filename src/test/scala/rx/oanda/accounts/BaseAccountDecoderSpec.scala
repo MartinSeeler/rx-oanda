@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.accounts
+package rx.oanda.accounts
 
 import cats.data.Xor
 import io.circe
 import io.circe.DecodingFailure
+import io.circe.parse._
 import org.scalatest._
-
-import circe.parse._
 
 class BaseAccountDecoderSpec extends FlatSpec with Matchers {
 

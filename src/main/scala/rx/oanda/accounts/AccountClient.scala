@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.accounts
+package rx.oanda.accounts
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -24,12 +24,9 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import cats.data.Xor.{Left, Right}
-import io.circe.Json
 import io.circe.parse._
-import io.martinseeler.rxoanda.OandaEnvironment
-import io.martinseeler.rxoanda.errors.OandaError._
-import io.martinseeler.rxoanda.accounts.Account._
-import io.martinseeler.rxoanda.accounts.BaseAccount._
+import rx.oanda.errors.OandaError
+import OandaError._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

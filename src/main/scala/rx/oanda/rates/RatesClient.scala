@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.rates
+package rx.oanda.rates
 
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.Uri.Query
@@ -27,8 +27,8 @@ import cats.data.Xor
 import cats.data.Xor.{Left, Right}
 import io.circe.Decoder
 import io.circe.parse._
-import io.martinseeler.rxoanda.errors.OandaError.OandaErrorEntityConversion
-import io.martinseeler.rxoanda.{Heartbeat, OandaEnvironment}
+import rx.oanda.errors.OandaError
+import rx.oanda.errors.OandaError.OandaErrorEntityConversion
 
 import scala.util.{Failure, Success}
 

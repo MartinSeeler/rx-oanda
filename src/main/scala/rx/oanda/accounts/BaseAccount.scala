@@ -14,8 +14,24 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda.errors
+package rx.oanda.accounts
 
-case class OandaException(oandaError: OandaError) extends Exception {
-  override def getMessage: String = oandaError.message
+import io.circe.Decoder
+import io.circe.generic.semiauto._
+
+case class BaseAccount(
+  accountId: Long,
+  accountName: String,
+  accountCurrency: String,
+  marginRate: Double
+)
+
+object BaseAccount {
+
+  implicit val decodeBaseAccount: Decoder[BaseAccount] =
+    deriveFor[BaseAccount].decoder
+
+  implicit val decodeBaseAccounts =
+    Decoder.instance(_.get[Vector[BaseAccount]]("accounts"))
+
 }

@@ -192,3 +192,4 @@ Temporary Items
 .Trash-*
 
 src/main/scala/io/martinseeler/rxoanda/AccountTest.scala
+src/main/scala/rx/oanda/AccountTest.scala

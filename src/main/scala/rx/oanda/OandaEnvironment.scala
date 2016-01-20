@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.martinseeler.rxoanda
+package rx.oanda
 
 import akka.actor.ActorSystem
 import akka.http.ConnectionPoolSettings

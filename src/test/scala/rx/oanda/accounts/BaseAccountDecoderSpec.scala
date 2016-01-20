@@ -17,7 +17,6 @@
 package rx.oanda.accounts
 
 import cats.data.Xor
-import io.circe
 import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._

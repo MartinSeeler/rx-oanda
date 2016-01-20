@@ -27,6 +27,7 @@ import cats.data.Xor
 import cats.data.Xor.{Left, Right}
 import io.circe.Decoder
 import io.circe.parse._
+import rx.oanda.{Heartbeat, OandaEnvironment}
 import rx.oanda.errors.OandaError
 import rx.oanda.errors.OandaError.OandaErrorEntityConversion
 

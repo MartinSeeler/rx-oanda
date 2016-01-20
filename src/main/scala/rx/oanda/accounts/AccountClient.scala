@@ -23,8 +23,7 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import cats.data.Xor.{Left, Right}
-import io.circe.parse._
+import de.knutwalker.akka.stream.support.CirceStreamSupport
 import rx.oanda.OandaEnvironment
 import rx.oanda.errors.OandaError
 import OandaError._
@@ -48,11 +47,7 @@ class AccountClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Actor
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
             .via(Gzip.withMaxBytesPerChunk(65536 * 10).decoderFlow)
-            .map(_.utf8String).map(decode[Account])
-            .flatMapConcat {
-              case Left(decodeError) ⇒ Source.failed(decodeError)
-              case Right(account) ⇒ Source.single(account)
-            }
+            .via(CirceStreamSupport.decode[Account])
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.empty
@@ -68,11 +63,8 @@ class AccountClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Actor
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
             .via(Gzip.withMaxBytesPerChunk(65536 * 10).decoderFlow)
-            .map(_.utf8String).log("utf-8").map(decode[Vector[BaseAccount]])
-            .flatMapConcat {
-              case Left(decodeError) ⇒ Source.failed(decodeError)
-              case Right(accounts) ⇒ Source(accounts)
-            }
+            .via(CirceStreamSupport.decode[Vector[BaseAccount]])
+            .mapConcat(identity)
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.empty

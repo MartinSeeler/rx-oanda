@@ -19,6 +19,7 @@ libraryDependencies ++= List(
   "com.typesafe.akka" %% "akka-stream-testkit-experimental"  % akkaStreamV  % "test",
   "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
   "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test",
+  "de.knutwalker"     %% "akka-stream-circe"                 % "2.0.0",
   // circe for decoding
   "io.circe"          %% "circe-core"                        % circeV,
   "io.circe"          %% "circe-generic"                     % circeV,

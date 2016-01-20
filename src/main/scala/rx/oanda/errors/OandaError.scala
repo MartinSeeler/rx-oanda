@@ -19,10 +19,9 @@ package rx.oanda.errors
 import akka.http.scaladsl.model.HttpEntity
 import akka.stream.scaladsl.Source
 import cats.data.Xor
-import cats.data.Xor.{Left, Right}
+import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe._
 import io.circe.generic.semiauto._
-import io.circe.parse._
 
 trait OandaError {
   def message: String
@@ -31,7 +30,7 @@ trait OandaError {
 object OandaError {
 
   implicit val decoderOandaError: Decoder[OandaError] = Decoder.instance { c ⇒
-    c.downField("code").as[Int] flatMap {
+    c.get[Int]("code") flatMap {
       case 1 ⇒ c.as[InvalidArgument]
       case 2 ⇒ c.as[MissingArgument]
       case 3 ⇒ c.as[MissingAuthorization]
@@ -44,12 +43,8 @@ object OandaError {
   implicit class OandaErrorEntityConversion(val entity: HttpEntity) extends AnyVal {
 
     def asErrorStream = entity.dataBytes
-      .map(_.utf8String)
-      .map(decode[OandaError])
-      .flatMapConcat {
-        case Left(decodeError) ⇒ Source.failed(decodeError)
-        case Right(oandaError) ⇒ Source.failed(OandaException(oandaError))
-      }
+      .via(CirceStreamSupport.decode[OandaError])
+      .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError)))
 
   }
 

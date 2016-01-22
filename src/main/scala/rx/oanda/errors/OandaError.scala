@@ -43,7 +43,7 @@ object OandaError {
   implicit class OandaErrorEntityConversion(val entity: HttpEntity) extends AnyVal {
 
     def asErrorStream = entity.dataBytes
-      .via(CirceStreamSupport.decode[OandaError])
+      .via(CirceStreamSupport.decode[OandaError]).log("decode")
       .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError)))
 
   }

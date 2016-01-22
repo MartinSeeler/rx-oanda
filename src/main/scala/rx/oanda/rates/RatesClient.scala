@@ -33,7 +33,7 @@ import scala.util.{Failure, Success}
 
 object RatesClient {
 
-  def rates(accountID: String, instruments: Seq[String])(implicit env: OandaEnvironment, mat: ActorMaterializer): Source[Xor[Heartbeat, OandaTick], Unit] = {
+  /*def rates(accountID: String, instruments: Seq[String])(implicit env: OandaEnvironment, mat: ActorMaterializer): Source[Xor[Heartbeat, OandaTick], Unit] = {
     val params = Map("accountId" → accountID, "instruments" → instruments.mkString(","))
     val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
     Source.single(req → 42L).log("request")
@@ -47,6 +47,6 @@ object RatesClient {
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.failed(new Exception("Unknown state in rates"))
       }
-  }
+  }*/
 
 }

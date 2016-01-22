@@ -17,53 +17,50 @@
 package rx.oanda.accounts
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.Materializer
+import akka.stream.scaladsl.Source
 import de.knutwalker.akka.stream.support.CirceStreamSupport
+import rx.oanda.errors.OandaError._
 import rx.oanda.OandaEnvironment
-import rx.oanda.errors.OandaError
-import OandaError._
+import rx.oanda.OandaEnvironment._
 
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class AccountClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: ActorMaterializer) {
+class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A]) {
 
-  private val apiFlow = if (env.authRequired) {
-    Http().cachedHostConnectionPoolTls[Any](host = env.apiEndpoint).log("api-connection").detach
-  } else {
-    Http().cachedHostConnectionPool[Any](host = env.apiEndpoint).log("api-connection").detach
-  }
+  private val apiConnection = env.apiFlow[Long]
 
-  def account(accountID: Long): Future[Account] = {
+  def account(accountID: Long): Source[Account, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(apiFlow).log("response")
+      .via(apiConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
-            .via(Gzip.withMaxBytesPerChunk(65536 * 10).decoderFlow)
-            .via(CirceStreamSupport.decode[Account])
+            .via(Gzip.decoderFlow)
+            .via(CirceStreamSupport.decode[Account]).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.empty
       }
-      .runWith(Sink.head)
+  }
+
+  def createAccount()(implicit ev: A =:= NoAuth): Source[BaseAccount, Unit] = {
+    ???
   }
 
   def accounts: Source[BaseAccount, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts"), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(apiFlow).log("response")
+      .via(apiConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
-            .via(Gzip.withMaxBytesPerChunk(65536 * 10).decoderFlow)
-            .via(CirceStreamSupport.decode[Vector[BaseAccount]])
+            .via(Gzip.decoderFlow)
+            .via(CirceStreamSupport.decode[Vector[BaseAccount]]).log("decode")
             .mapConcat(identity)
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)

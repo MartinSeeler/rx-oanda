@@ -103,7 +103,7 @@ class OrderDecoderSpec extends FlatSpec with Matchers {
       """.stripMargin
 
     decode[Order](json) should matchPattern {
-      case Xor.Right(Order(43211, "EUR_USD", 5, "buy", "limit", 1453326442000000L, 1.45123, 1.7, 1.4, 1453330035000000L, 0, 0, 10)) ⇒
+      case Xor.Right(Order(43211, "EUR_USD", 5, Buy, "limit", 1453326442000000L, 1.45123, 1.7, 1.4, 1453330035000000L, 0, 0, 10)) ⇒
     }
   }
 
@@ -172,8 +172,8 @@ class OrderDecoderSpec extends FlatSpec with Matchers {
 
     decode[Vector[Order]](json) should matchPattern {
       case Xor.Right(Vector(
-      Order(175427639, "EUR_USD", 20, "buy", "marketIfTouched", 1453326442000000L, 1.0, 0, 0, 1453330035000000L, 0, 0, 0),
-      Order(43211, "EUR_CAD", 5, "buy", "limit", 1453326442000000L, 1.45123, 1.7, 1.4, 1453330035000000L, 0, 0, 10)
+      Order(175427639, "EUR_USD", 20, Buy, "marketIfTouched", 1453326442000000L, 1.0, 0, 0, 1453330035000000L, 0, 0, 0),
+      Order(43211, "EUR_CAD", 5, Buy, "limit", 1453326442000000L, 1.45123, 1.7, 1.4, 1453330035000000L, 0, 0, 10)
       )) ⇒ //...
     }
   }

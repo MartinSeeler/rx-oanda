@@ -31,12 +31,12 @@ import scala.util.{Failure, Success}
 
 class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A]) {
 
-  private val apiConnection = env.apiFlow[Long]
+  private[this] val apiConnections = env.apiFlow[Long]
 
   def account(accountID: Long): Source[Account, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(apiConnection).log("response")
+      .via(apiConnections).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
@@ -48,14 +48,14 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
       }
   }
 
-  def createAccount()(implicit ev: A =:= NoAuth): Source[BaseAccount, Unit] = {
+  def createAccount(currency: Option[String])(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] = {
     ???
   }
 
   def accounts: Source[BaseAccount, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts"), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(apiConnection).log("response")
+      .via(apiConnections).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes

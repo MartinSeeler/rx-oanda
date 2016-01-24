@@ -20,7 +20,7 @@ import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
-import rx.oanda.orders.{Buy, Sell}
+import rx.oanda.utils._
 
 class PositionDecoderSpec extends FlatSpec with Matchers {
 

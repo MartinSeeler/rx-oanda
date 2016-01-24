@@ -16,13 +16,12 @@
 
 package rx.oanda.positions
 
-import rx.oanda.orders.OrderDirection
-
 import io.circe.Decoder
 import io.circe.generic.semiauto._
+import rx.oanda.utils.Side
 
 case class Position(
-  side: OrderDirection,
+  side: Side,
   instrument: String,
   units: Int,
   avgPrice: Double

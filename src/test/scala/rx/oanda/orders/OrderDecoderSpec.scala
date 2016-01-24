@@ -20,6 +20,7 @@ import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
+import rx.oanda.utils.Buy
 
 class OrderDecoderSpec extends FlatSpec with Matchers {
 

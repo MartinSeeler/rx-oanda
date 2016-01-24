@@ -18,12 +18,12 @@ package rx.oanda.trades
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._
-import rx.oanda.orders.OrderDirection
+import rx.oanda.utils.Side
 
 case class Trade(
   id: Long,
   units: Int,
-  side: OrderDirection,
+  side: Side,
   instrument: String,
   time: Long,
   price: Double,

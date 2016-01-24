@@ -19,29 +19,13 @@ package rx.oanda.orders
 import cats.data.Xor
 import io.circe.{DecodingFailure, Decoder}
 import io.circe.generic.semiauto._
-
-sealed trait OrderDirection
-case object Buy extends OrderDirection
-case object Sell extends OrderDirection
-
-object OrderDirection {
-
-  implicit val decodeOrderDirection: Decoder[OrderDirection] =
-    Decoder.instance { c ⇒
-      c.as[String] flatMap {
-        case "buy" ⇒ Xor.right(Buy)
-        case "sell" ⇒ Xor.right(Sell)
-        case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaError with code $otherwise", c.history))
-      }
-    }
-
-}
+import rx.oanda.utils.Side
 
 case class Order(
   id: Long,
   instrument: String,
   units: Int,
-  side: OrderDirection,
+  side: Side,
   `type`: String,
   time: Long,
   price: Double,

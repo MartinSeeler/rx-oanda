@@ -23,6 +23,7 @@ import akka.http.scaladsl.model._
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import de.knutwalker.akka.stream.support.CirceStreamSupport
+import io.circe.Decoder
 import rx.oanda.errors.OandaError._
 import rx.oanda.OandaEnvironment
 import rx.oanda.OandaEnvironment._
@@ -33,19 +34,22 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
 
   private[this] val apiConnections = env.apiFlow[Long]
 
-  def account(accountID: Long): Source[Account, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
+  private def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, Unit] =
     Source.single(req → 42L).log("request")
       .via(apiConnections).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes
             .via(Gzip.decoderFlow)
-            .via(CirceStreamSupport.decode[Account]).log("decode")
+            .via(CirceStreamSupport.decode[R]).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.empty
       }
+
+  def account(accountID: Long): Source[Account, Unit] = {
+    val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
+    makeRequest[Account](req)
   }
 
   def createAccount(currency: Option[String])(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] = {
@@ -54,18 +58,7 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
 
   def accounts: Source[BaseAccount, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts"), headers = env.headers)
-    Source.single(req → 42L).log("request")
-      .via(apiConnections).log("response")
-      .flatMapConcat {
-        case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
-          entity.dataBytes
-            .via(Gzip.decoderFlow)
-            .via(CirceStreamSupport.decode[Vector[BaseAccount]]).log("decode")
-            .mapConcat(identity)
-        case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
-        case (Failure(e), _) ⇒ Source.failed(e)
-        case _ ⇒ Source.empty
-      }
+    makeRequest[Vector[BaseAccount]](req).mapConcat(identity)
   }
 
 }

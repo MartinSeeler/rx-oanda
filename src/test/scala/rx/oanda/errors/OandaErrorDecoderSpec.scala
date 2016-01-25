@@ -25,6 +25,34 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
 
   behavior of "The Oanda Error Decoder"
 
+  it must "parse an invalid argument error" in {
+    val json =
+      """
+        |{
+        | "code" : 1,
+        | "message" : "Invalid or malformed argument: accountId",
+        | "moreInfo" : "http:\/\/developer.oanda.com\/docs\/v1\/troubleshooting\/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(InvalidArgument("Invalid or malformed argument: accountId")) ⇒
+    }
+  }
+
+  it must "parse a missing argument error" in {
+    val json =
+      """
+        |{
+        | "code": 2,
+        | "message": "Missing required argument: instruments",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(MissingArgument("Missing required argument: instruments")) ⇒
+    }
+  }
+
   it must "parse an invalid authorization error" in {
     val json =
       """

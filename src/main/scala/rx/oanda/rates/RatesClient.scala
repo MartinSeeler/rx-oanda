@@ -16,22 +16,23 @@
 
 package rx.oanda.rates
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
-import akka.stream.io.Framing
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import cats.data.Xor
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
-import rx.oanda.{Heartbeat, OandaEnvironment}
+import rx.oanda.OandaEnvironment
+import rx.oanda.OandaEnvironment.{ApiFlow, Auth}
 import rx.oanda.errors.OandaError.OandaErrorEntityConversion
+import rx.oanda.rates.RatesClient._
 
 import scala.util.{Failure, Success}
 
-object RatesClient {
+class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A]) {
 
   /*def rates(accountID: String, instruments: Seq[String])(implicit env: OandaEnvironment, mat: ActorMaterializer): Source[Xor[Heartbeat, OandaTick], Unit] = {
     val params = Map("accountId" → accountID, "instruments" → instruments.mkString(","))
@@ -48,5 +49,55 @@ object RatesClient {
         case _ ⇒ Source.failed(new Exception("Unknown state in rates"))
       }
   }*/
+
+  private[this] val apiConnections = env.apiFlow[Long]
+
+  private def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, Unit] =
+    Source.single(req → 42L).log("request")
+      .via(apiConnections).log("response")
+      .flatMapConcat {
+        case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
+          entity.dataBytes
+            .via(Gzip.decoderFlow).log("bytes")
+            .via(CirceStreamSupport.decode[R]).log("decode")
+        case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
+        case (Failure(e), _) ⇒ Source.failed(e)
+        case _ ⇒ Source.empty
+      }
+
+  def prices(instruments: Seq[String]): Source[OandaTick, Unit] = {
+    val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
+    makeRequest[Vector[OandaTick]](req).mapConcat(identity)
+  }
+
+  def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] = {
+    val rawQuery = Seq(accountIdQuery(accountId), fieldsQuery, instrumentsQuery(instruments)).filter(_.nonEmpty).mkString("&")
+    val req = HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
+    makeRequest[Vector[Instrument]](req).mapConcat(identity)
+  }
+
+}
+
+object RatesClient {
+
+  private val instrumentFields = Seq(
+    "displayName",
+    "halted",
+    "interestRate",
+    "marginRate",
+    "maxTradeUnits",
+    "maxTrailingStop",
+    "minTrailingStop",
+    "pip",
+    "precision"
+  )
+
+  private val fieldsQuery = s"fields=${instrumentFields.mkString("%2C")}"
+
+  private def instrumentsQuery(instruments: Seq[String]): String =
+    if (instruments.isEmpty) "" else s"instruments=${instruments.mkString("%2C")}"
+
+  private def accountIdQuery(accountId: Long): String =
+    s"accountId=$accountId"
 
 }

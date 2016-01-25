@@ -23,6 +23,10 @@ case class OandaTick(instrument: String, time: Long, bid: Double, ask: Double)
 
 object OandaTick {
 
-  implicit val decodeOandaTick: Decoder[OandaTick] = deriveFor[OandaTick].decoder
+  implicit val decodeOandaTick: Decoder[OandaTick] =
+    deriveFor[OandaTick].decoder
+
+  implicit val decodePrices =
+    Decoder.instance(_.get[Vector[OandaTick]]("prices"))
 
 }

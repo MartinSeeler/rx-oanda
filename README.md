@@ -6,3 +6,6 @@
 
 
 This code is currently a playground project to find the right setup.
+
+
+[![Join the chat at https://gitter.im/MartinSeeler/rx-oanda](https://badges.gitter.im/MartinSeeler/rx-oanda.svg)](https://gitter.im/MartinSeeler/rx-oanda?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)

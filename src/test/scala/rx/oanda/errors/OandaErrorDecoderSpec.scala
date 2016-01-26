@@ -53,6 +53,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a missing authorization error" in {
+    val json =
+      """
+        |{
+        | "code" : 3,
+        | "message" : "This request requires authorization",
+        | "moreInfo" : "http:\/\/developer.oanda.com\/docs\/v1\/auth\/#overview"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(MissingAuthorization("This request requires authorization")) ⇒
+    }
+  }
+
   it must "parse an invalid authorization error" in {
     val json =
       """

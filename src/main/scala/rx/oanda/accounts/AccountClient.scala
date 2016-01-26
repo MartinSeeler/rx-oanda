@@ -17,43 +17,25 @@
 package rx.oanda.accounts
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.coding.Gzip
-import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.HttpMethods._
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import de.knutwalker.akka.stream.support.CirceStreamSupport
-import io.circe.Decoder
-import rx.oanda.errors.OandaError._
-import rx.oanda.OandaEnvironment
 import rx.oanda.OandaEnvironment._
+import rx.oanda.{ApiConnection, OandaEnvironment}
 
-import scala.util.{Failure, Success}
+class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A])
+  extends ApiConnection {
 
-class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A]) {
-
-  private[this] val apiConnections = env.apiFlow[Long]
-
-  private def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, Unit] =
-    Source.single(req → 42L).log("request")
-      .via(apiConnections).log("response")
-      .flatMapConcat {
-        case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
-          entity.dataBytes
-            .via(Gzip.decoderFlow)
-            .via(CirceStreamSupport.decode[R]).log("decode")
-        case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
-        case (Failure(e), _) ⇒ Source.failed(e)
-        case _ ⇒ Source.empty
-      }
+  private[oanda] val apiConnections = env.apiFlow[Long]
 
   def account(accountID: Long): Source[Account, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
     makeRequest[Account](req)
   }
 
-  def createAccount(currency: Option[String])(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] = {
-    ???
+  def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] = {
+    Source.empty
   }
 
   def accounts: Source[BaseAccount, Unit] = {

@@ -74,13 +74,25 @@ object OandaEnvironment {
 
   }
 
-
+  /**
+    * An environment purely for testing; it is not as fast, stable and reliable as the other environments
+    * (i.e. it can go down once in a while). Market data returned from this environment is simulated
+    * (not real market data).
+    */
   val SandboxEnvironment =
     OandaEnvironment[NoAuth]("Sandbox", "api-sandbox.oanda.com", "stream-sandbox.oanda.com")
 
+  /**
+    * A stable environment; recommended for testing with your fxTrade Practice
+    * account and your personal access token.
+    */
   def TradePracticeEnvironment(token: String) =
     OandaEnvironment[WithAuth]("fxTrade Practice", "api-fxpractice.oanda.com", "stream-fxpractice.oanda.com", Some(token))
 
+  /**
+    * A stable environment; recommended for production-ready code to execute
+    * with your fxTrade account and your personal access token.
+    */
   def TradeEnvironment(token: String) =
     OandaEnvironment[WithAuth]("fxTrade", "api-fxtrade.oanda.com", "stream-fxtrade.oanda.com", Some(token))
 

@@ -44,7 +44,7 @@ object OandaError {
 
   implicit class OandaErrorEntityConversion(val entity: HttpEntity) extends AnyVal {
 
-    def asErrorStream = entity.dataBytes.log("bytes")
+    def asErrorStream = entity.dataBytes.log("bytes", _.utf8String)
       .via(CirceStreamSupport.decode[OandaError]).log("decode")
       .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError)))
 
@@ -54,27 +54,32 @@ object OandaError {
 
 case class InvalidArgument(message: String) extends OandaError
 object InvalidArgument {
-  implicit val decodeInvalidArgument: Decoder[InvalidArgument] = deriveFor[InvalidArgument].decoder
+  implicit val decodeInvalidArgument: Decoder[InvalidArgument] =
+    deriveFor[InvalidArgument].decoder
 }
 
 case class MissingArgument(message: String) extends OandaError
 object MissingArgument {
-  implicit val decodeMissingArgument: Decoder[MissingArgument] = deriveFor[MissingArgument].decoder
+  implicit val decodeMissingArgument: Decoder[MissingArgument] =
+    deriveFor[MissingArgument].decoder
 }
 
 case class MissingAuthorization(message: String) extends OandaError
 object MissingAuthorization {
-  implicit val decodeMissingAuthorization: Decoder[MissingAuthorization] = deriveFor[MissingAuthorization].decoder
+  implicit val decodeMissingAuthorization: Decoder[MissingAuthorization] =
+    deriveFor[MissingAuthorization].decoder
 }
 
 case class InvalidAuhtorization(message: String) extends OandaError
 object InvalidAuhtorization {
-  implicit val decodeInvalidAuhtorization: Decoder[InvalidAuhtorization] = deriveFor[InvalidAuhtorization].decoder
+  implicit val decodeInvalidAuhtorization: Decoder[InvalidAuhtorization] =
+    deriveFor[InvalidAuhtorization].decoder
 }
 
 case class RateLimitViolation(message: String) extends OandaError
 object RateLimitViolation {
-  implicit val decodeRateLimitViolation: Decoder[RateLimitViolation] = deriveFor[RateLimitViolation].decoder
+  implicit val decodeRateLimitViolation: Decoder[RateLimitViolation] =
+    deriveFor[RateLimitViolation].decoder
 }
 
 case class InvalidInstrument(message: String) extends OandaError

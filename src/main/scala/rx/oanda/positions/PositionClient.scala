@@ -27,7 +27,7 @@ import rx.oanda.{ApiConnection, OandaEnvironment}
 class PositionClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A])
   extends ApiConnection {
 
-  private[oanda] val apiConnections = env.apiFlow[Long]
+  private[oanda] val apiConnections = env.connectionFlow[Long](env.apiEndpoint)
 
   def positions(accountId: Long): Source[Position, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions"), headers = env.headers)

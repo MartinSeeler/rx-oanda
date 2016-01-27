@@ -17,19 +17,14 @@
 package rx.oanda
 
 import akka.actor.ActorSystem
-import akka.http.ConnectionPoolSettings
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.model.ContentType.WithCharset
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.model.ws.Message
-import akka.stream.{ClosedShape, Materializer, ActorMaterializer}
+import akka.stream.Materializer
 import akka.stream.scaladsl._
-import rx.oanda.OandaEnvironment.{ApiFlow, Auth, WithAuth, NoAuth}
 
 import scala.annotation.implicitNotFound
-import scala.collection.immutable.Seq
 import scala.util.Try
 
 
@@ -63,10 +58,10 @@ object OandaEnvironment {
       }
   }
 
-  @implicitNotFound("No ApiFlow for ${A}")
+  @implicitNotFound("No ConnectionFlow for ${A}")
   trait ApiFlow[A <: Auth] {
 
-    def apply[T](env: OandaEnvironment[A])(implicit mat: Materializer, system: ActorSystem):
+    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem):
       Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool]
 
   }
@@ -74,13 +69,13 @@ object OandaEnvironment {
   object ApiFlow {
 
     implicit val AuthApiFlow: ApiFlow[WithAuth] = new ApiFlow[WithAuth] {
-      def apply[T](env: OandaEnvironment[WithAuth])(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPoolTls[T](host = env.apiEndpoint).log("auth-api-connection")
+      def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
+        Http().cachedHostConnectionPoolTls[T](host = endpoint).log("auth-connection")
     }
 
     implicit val NoAuthApiFlow: ApiFlow[NoAuth] = new ApiFlow[NoAuth] {
-      def apply[T](env: OandaEnvironment[NoAuth])(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPool[T](host = env.apiEndpoint).log("no-auth-api-connection")
+      def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
+        Http().cachedHostConnectionPool[T](host = endpoint).log("no-auth-connection")
     }
 
   }
@@ -93,7 +88,7 @@ object OandaEnvironment {
     def headers =
       unixTime :: gzipEncoding :: env.token.map(t ⇒ Authorization(OAuth2BearerToken(t))).toList
 
-    def apiFlow[T](implicit A: ApiFlow[A], mat: Materializer, sys: ActorSystem) = A.apply[T](env)
+    def connectionFlow[T](endpoint: String)(implicit A: ApiFlow[A], mat: Materializer, sys: ActorSystem) = A.apply[T](endpoint)
 
   }
 

@@ -17,34 +17,47 @@
 package rx.oanda.rates
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.io.Framing
+import akka.stream.scaladsl.{Flow, Source}
+import akka.util.ByteString
+import cats.data.Xor
+import de.knutwalker.akka.stream.support.CirceStreamSupport
+import io.circe.Decoder
 import rx.oanda.OandaEnvironment.{ApiFlow, Auth}
+import rx.oanda.errors.OandaError._
 import rx.oanda.rates.RatesClient._
+import rx.oanda.utils.Heartbeat
 import rx.oanda.{ApiConnection, OandaEnvironment}
+
+import scala.util._
 
 class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A])
   extends ApiConnection {
 
-  /*def rates(accountID: String, instruments: Seq[String])(implicit env: OandaEnvironment, mat: ActorMaterializer): Source[Xor[Heartbeat, OandaTick], Unit] = {
-    val params = Map("accountId" → accountID, "instruments" → instruments.mkString(","))
+  private[oanda] def streamConnections: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool] = env.connectionFlow[Long](env.streamEndpoint)
+
+  def rates(accountID: Long, instruments: Seq[String]): Source[Xor[Heartbeat, OandaTick], Unit] = {
+    val params = Map("accountId" → accountID.toString, "instruments" → instruments.mkString(","))
     val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(env.streamConnection).log("response")
+      .via(streamConnections).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes.log("data-bytes")
-            .via(Framing.delimiter(ByteString("\n"), 1024)).log("frame-delimiter")
+            .via(Framing.delimiter(ByteString("\n"), 1024, allowTruncation = true)).log("frame-delimiter")
             .via(CirceStreamSupport.decode(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode-xor")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.failed(new Exception("Unknown state in rates"))
       }
-  }*/
+  }
 
-  private[oanda] val apiConnections = env.apiFlow[Long]
+  private[oanda] val apiConnections = env.connectionFlow[Long](env.apiEndpoint)
 
   def prices(instruments: Seq[String]): Source[OandaTick, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)

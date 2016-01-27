@@ -109,4 +109,32 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a rate limit violation error" in {
+    val json =
+      """
+        |{
+        | "code": 68,
+        | "message": "Rate limit violation of newly established connections. Allowed rate: 2 connections per second",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(RateLimitViolation("Rate limit violation of newly established connections. Allowed rate: 2 connections per second")) ⇒
+    }
+  }
+
+  it must "fail on invalid error code" in {
+    val json =
+      """
+        |{
+        | "code": -1,
+        | "message": "This should fail",
+        | "moreInfo": "htt://example.com"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Left(e: DecodingFailure) ⇒
+    }
+  }
+
 }

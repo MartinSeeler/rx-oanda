@@ -28,11 +28,11 @@ import scala.util.{Failure, Success, Try}
 
 trait ApiConnection {
 
-  private[oanda] def apiConnections: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool]
+  private[oanda] val apiConnection: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool]
 
   private[oanda] def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, Unit] =
     Source.single(req → 42L).log("request")
-      .via(apiConnections).log("response")
+      .via(apiConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes

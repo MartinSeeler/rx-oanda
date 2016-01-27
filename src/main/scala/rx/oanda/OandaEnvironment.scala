@@ -70,7 +70,8 @@ object OandaEnvironment {
 
     def headers = unixTime :: gzipEncoding :: env.token.map(t ⇒ Authorization(OAuth2BearerToken(t))).toList
 
-    def connectionFlow[T](endpoint: String)(implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](endpoint)
+    def apiFlow[T](implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](env.apiEndpoint)
+    def streamFlow[T](implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](env.streamEndpoint)
 
   }
 

@@ -39,13 +39,13 @@ import scala.util._
 class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
   extends ApiConnection {
 
-  private[oanda] def streamConnections: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool] = env.connectionFlow[Long](env.streamEndpoint)
+  private[oanda] val streamConnection: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool] = env.apiFlow[Long]
 
   def rates(accountID: Long, instruments: Seq[String]): Source[Xor[Heartbeat, OandaTick], Unit] = {
     val params = Map("accountId" → accountID.toString, "instruments" → instruments.mkString(","))
     val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
     Source.single(req → 42L).log("request")
-      .via(streamConnections).log("response")
+      .via(streamConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
           entity.dataBytes.log("chunks", _.utf8String)
@@ -57,7 +57,7 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
       }
   }
 
-  private[oanda] val apiConnections = env.connectionFlow[Long](env.apiEndpoint)
+  private[oanda] val apiConnection = env.apiFlow[Long]
 
   def prices(instruments: Seq[String]): Source[OandaTick, Unit] = {
     val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)

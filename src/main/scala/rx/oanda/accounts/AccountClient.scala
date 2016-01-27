@@ -27,12 +27,12 @@ import rx.oanda.{ApiConnection, OandaEnvironment}
 class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
   extends ApiConnection {
 
-  private[oanda] val apiConnections = env.connectionFlow[Long](env.apiEndpoint)
+  private[oanda] val apiConnection = env.apiFlow[Long]
 
-  def account(accountID: Long): Source[Account, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountID"), headers = env.headers)
-    makeRequest[Account](req)
-  }
+  private[this] val accountRequest: Long ⇒ HttpRequest =
+    x ⇒ HttpRequest(GET, Uri(s"/v1/accounts/$x"), headers = env.headers)
+
+  def account(accountId: Long): Source[Account, Unit] = (accountRequest andThen makeRequest[Account])(accountId)
 
   def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] = {
     Source.empty

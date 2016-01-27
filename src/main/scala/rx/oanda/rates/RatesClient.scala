@@ -28,7 +28,7 @@ import akka.util.ByteString
 import cats.data.Xor
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
-import rx.oanda.OandaEnvironment.{ApiFlow, Auth}
+import rx.oanda.OandaEnvironment.{ConnectionPool, Auth}
 import rx.oanda.errors.OandaError._
 import rx.oanda.rates.RatesClient._
 import rx.oanda.utils.Heartbeat
@@ -36,7 +36,7 @@ import rx.oanda.{ApiConnection, OandaEnvironment}
 
 import scala.util._
 
-class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ApiFlow[A])
+class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
   extends ApiConnection {
 
   private[oanda] def streamConnections: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool] = env.connectionFlow[Long](env.streamEndpoint)
@@ -48,9 +48,9 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
       .via(streamConnections).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
-          entity.dataBytes.log("data-bytes")
-            .via(Framing.delimiter(ByteString("\n"), 1024, allowTruncation = true)).log("frame-delimiter")
-            .via(CirceStreamSupport.decode(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode-xor")
+          entity.dataBytes.log("chunks", _.utf8String)
+            .via(Framing.delimiter(ByteString("\n"), 1024, allowTruncation = true)).log("bytes", _.utf8String)
+            .via(CirceStreamSupport.decode(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
         case _ ⇒ Source.failed(new Exception("Unknown state in rates"))

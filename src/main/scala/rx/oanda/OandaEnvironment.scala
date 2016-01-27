@@ -41,41 +41,24 @@ object OandaEnvironment {
   sealed trait NoAuth extends Auth
   sealed trait WithAuth extends Auth
 
-  @implicitNotFound("Nonono, ${T} requires to be ${A}")
-  sealed trait requires[T <: Auth, A <: Auth] {
-    def apply(x: OandaEnvironment[T]): OandaEnvironment[A]
-  }
-
-  object requires {
-
-    implicit val requiresNoAuth: requires[NoAuth, NoAuth] =
-      new requires[NoAuth, NoAuth] {
-        def apply(x: OandaEnvironment[NoAuth]): OandaEnvironment[NoAuth] = x
-      }
-    implicit val requiresWithAuth: requires[WithAuth, WithAuth] =
-      new requires[WithAuth, WithAuth] {
-        def apply(x: OandaEnvironment[WithAuth]): OandaEnvironment[WithAuth] = x
-      }
-  }
-
-  @implicitNotFound("No ConnectionFlow for ${A}")
-  trait ApiFlow[A <: Auth] {
+  @implicitNotFound("No ConnectionPool for ${A}")
+  trait ConnectionPool[A <: Auth] {
 
     def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem):
       Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool]
 
   }
 
-  object ApiFlow {
+  object ConnectionPool {
 
-    implicit val AuthApiFlow: ApiFlow[WithAuth] = new ApiFlow[WithAuth] {
+    implicit val AuthConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
       def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPoolTls[T](host = endpoint).log("auth-connection")
+        Http().cachedHostConnectionPoolTls[T](host = endpoint).log("connection")
     }
 
-    implicit val NoAuthApiFlow: ApiFlow[NoAuth] = new ApiFlow[NoAuth] {
+    implicit val NoAuthConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
       def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPool[T](host = endpoint).log("no-auth-connection")
+        Http().cachedHostConnectionPool[T](host = endpoint).log("connection")
     }
 
   }
@@ -85,10 +68,9 @@ object OandaEnvironment {
 
   implicit final class OandaEnvironmentOps[A <: Auth](private val env: OandaEnvironment[A]) extends AnyVal {
 
-    def headers =
-      unixTime :: gzipEncoding :: env.token.map(t ⇒ Authorization(OAuth2BearerToken(t))).toList
+    def headers = unixTime :: gzipEncoding :: env.token.map(t ⇒ Authorization(OAuth2BearerToken(t))).toList
 
-    def connectionFlow[T](endpoint: String)(implicit A: ApiFlow[A], mat: Materializer, sys: ActorSystem) = A.apply[T](endpoint)
+    def connectionFlow[T](endpoint: String)(implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](endpoint)
 
   }
 

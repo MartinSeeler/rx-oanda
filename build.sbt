@@ -9,6 +9,7 @@ val akkaStreamV = "2.0.3"
 val akkaHttpV = "2.0.3"
 val circeV = "0.2.1"
 val scalaTestV = "2.2.6"
+val scalaCheckV = "1.12.5"
 
 resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -25,7 +26,8 @@ libraryDependencies ++= List(
   "io.circe"          %% "circe-generic"                     % circeV,
   "io.circe"          %% "circe-parse"                       % circeV,
   // testing
-  "org.scalatest"     %% "scalatest"                         % scalaTestV   % "test"
+  "org.scalatest"     %% "scalatest"                         % scalaTestV   % "test",
+  "org.scalacheck"    %% "scalacheck"                        % scalaCheckV  % "test"
 )
 
 organization := "io.martinseeler"

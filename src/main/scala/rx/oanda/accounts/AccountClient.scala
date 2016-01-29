@@ -41,10 +41,10 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
   def account(accountId: Long): Source[Account, Unit] =
     makeRequest[Account](accountRequest(accountId))
 
-  def accounts: Source[BaseAccount, Unit] =
-    makeRequest[Vector[BaseAccount]](accountsRequest).mapConcat(identity)
+  def accounts: Source[ShortAccount, Unit] =
+    makeRequest[Vector[ShortAccount]](accountsRequest).mapConcat(identity)
 
-  def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[TestAccount, Unit] =
+  def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[SandboxAccount, Unit] =
     Source.empty // TODO: implement me when Sandbox API is back
 
 }

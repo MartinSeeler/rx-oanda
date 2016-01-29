@@ -19,14 +19,19 @@ package rx.oanda.accounts
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class TestAccount(
-  username: String,
-  password: String,
-  accountId: Long
+case class ShortAccount(
+  accountId: Long,
+  accountName: String,
+  accountCurrency: String,
+  marginRate: Double
 )
 
-object TestAccount {
+object ShortAccount {
 
-  implicit val decodeTestAccount: Decoder[TestAccount] = deriveFor[TestAccount].decoder
+  implicit val decodeShortAccount: Decoder[ShortAccount] =
+    deriveFor[ShortAccount].decoder
+
+  implicit val decodeShortAccounts =
+    Decoder.instance(_.get[Vector[ShortAccount]]("accounts"))
 
 }

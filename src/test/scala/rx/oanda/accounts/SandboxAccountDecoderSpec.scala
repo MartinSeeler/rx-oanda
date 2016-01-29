@@ -21,11 +21,11 @@ import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
 
-class TestAccountDecoderSpec extends FlatSpec with Matchers {
+class SandboxAccountDecoderSpec extends FlatSpec with Matchers {
 
-  behavior of "The TestAccount Decoder"
+  behavior of "The SandboxAccount Decoder"
 
-  it must "parse a test account from valid json" in {
+  it must "parse a sandbox account from valid json" in {
     val json =
       """
         |{
@@ -34,12 +34,12 @@ class TestAccountDecoderSpec extends FlatSpec with Matchers {
         | "accountId" : 8954947
         |}
       """.stripMargin
-    decode[TestAccount](json) should matchPattern {
-      case Xor.Right(TestAccount("keith", "Rocir~olf4", 8954947L)) ⇒
+    decode[SandboxAccount](json) should matchPattern {
+      case Xor.Right(SandboxAccount("keith", "Rocir~olf4", 8954947L)) ⇒
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         {
@@ -47,7 +47,7 @@ class TestAccountDecoderSpec extends FlatSpec with Matchers {
         | "accountId" : 8954947
         |}
       """.stripMargin
-    decode[BaseAccount](json) should matchPattern {
+    decode[SandboxAccount](json) should matchPattern {
       case Xor.Left(e: DecodingFailure) ⇒ //...
     }
   }

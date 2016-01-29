@@ -21,11 +21,11 @@ import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
 
-class BaseAccountDecoderSpec extends FlatSpec with Matchers {
+class ShortAccountDecoderSpec extends FlatSpec with Matchers {
 
-  behavior of "The BaseAccount Decoder"
+  behavior of "The ShortAccount Decoder"
 
-  it must "parse a short account info from valid json" in {
+  it must "parse a short account from valid json" in {
     val json =
       """
         |{
@@ -35,12 +35,12 @@ class BaseAccountDecoderSpec extends FlatSpec with Matchers {
         | "marginRate" : 0.05
         |}
       """.stripMargin
-    decode[BaseAccount](json) should matchPattern {
-      case Xor.Right(BaseAccount(8954947L, "Primary", "USD", 0.05)) ⇒
+    decode[ShortAccount](json) should matchPattern {
+      case Xor.Right(ShortAccount(8954947L, "Primary", "USD", 0.05)) ⇒
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         |{
@@ -49,12 +49,12 @@ class BaseAccountDecoderSpec extends FlatSpec with Matchers {
         | "marginRate" : 0.05
         |}
       """.stripMargin
-    decode[BaseAccount](json) should matchPattern {
+    decode[ShortAccount](json) should matchPattern {
       case Xor.Left(e: DecodingFailure) ⇒ //...
     }
   }
 
-  it must "parse the account list from valid json" in {
+  it must "parse multiple short accounts from json array" in {
     val json =
       """
         |{
@@ -74,8 +74,8 @@ class BaseAccountDecoderSpec extends FlatSpec with Matchers {
         | ]
         |}
       """.stripMargin
-    decode[Vector[BaseAccount]](json) should matchPattern {
-      case Xor.Right(Vector(BaseAccount(8954947L, "Primary", "USD", 0.05), BaseAccount(8954950L, "SweetHome", "CAD", 0.02))) ⇒ //...
+    decode[Vector[ShortAccount]](json) should matchPattern {
+      case Xor.Right(Vector(ShortAccount(8954947L, "Primary", "USD", 0.05), ShortAccount(8954950L, "SweetHome", "CAD", 0.02))) ⇒ //...
     }
   }
 

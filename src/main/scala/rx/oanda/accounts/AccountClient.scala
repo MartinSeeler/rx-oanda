@@ -32,25 +32,25 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
   private[accounts] def accountRequest(accountId: Long): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/accounts/$accountId"), headers = env.headers)
 
-  private[accounts] def accountsRequest(implicit ev: A =:= WithAuth): HttpRequest =
+  private[accounts] def accountsRequest(implicit ev: MustHaveAuth[A]): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/accounts"), headers = env.headers)
 
-  private[accounts] def accountsRequest(username: String)(implicit ev: A =:= NoAuth): HttpRequest =
+  private[accounts] def accountsRequest(username: String)(implicit ev: MustNotHaveAuth[A]): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/accounts").withRawQueryString(s"username=$username"), headers = env.headers)
 
-  private[accounts] def createAccountRequest(implicit ev: A =:= NoAuth): HttpRequest =
+  private[accounts] def createAccountRequest(implicit ev: MustNotHaveAuth[A]): HttpRequest =
     HttpRequest(POST, Uri(s"/v1/accounts"), headers = env.headers)
 
   def account(accountId: Long): Source[Account, Unit] =
     makeRequest[Account](accountRequest(accountId))
 
-  def accounts(implicit ev: A =:= WithAuth): Source[ShortAccount, Unit] =
+  def accounts(implicit ev: MustHaveAuth[A]): Source[ShortAccount, Unit] =
     makeRequest[Vector[ShortAccount]](accountsRequest).mapConcat(identity)
 
-  def accounts(username: String)(implicit ev: A =:= NoAuth): Source[ShortAccount, Unit] =
+  def accounts(username: String)(implicit ev: MustNotHaveAuth[A]): Source[ShortAccount, Unit] =
     makeRequest[Vector[ShortAccount]](accountsRequest(username)).mapConcat(identity)
 
-  def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[SandboxAccount, Unit] =
+  def createAccount(currency: Option[String] = None)(implicit ev: MustNotHaveAuth[A]): Source[SandboxAccount, Unit] =
     Source.empty // TODO: implement me when Sandbox API is back
 
 }

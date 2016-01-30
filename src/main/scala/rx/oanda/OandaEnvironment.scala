@@ -41,6 +41,12 @@ object OandaEnvironment {
   sealed trait NoAuth extends Auth
   sealed trait WithAuth extends Auth
 
+  @implicitNotFound("You may only call this on an account that supports authentication.")
+  type MustHaveAuth[A] = A =:= WithAuth
+
+  @implicitNotFound("You may only call this on an account that does not use authentication.")
+  type MustNotHaveAuth[A] = A =:= NoAuth
+
   @implicitNotFound("No ConnectionPool for ${A}")
   trait ConnectionPool[A <: Auth] {
 

@@ -42,7 +42,7 @@ class SandboxAccountDecoderSpec extends FlatSpec with Matchers {
   it must "fail when a property is missing" in {
     val json =
       """
-        {
+        |{
         | "username" : "keith",
         | "accountId" : 8954947
         |}

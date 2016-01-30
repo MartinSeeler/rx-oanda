@@ -32,43 +32,41 @@ import rx.oanda.OandaEnvironment.{ConnectionPool, Auth}
 import rx.oanda.errors.OandaError._
 import rx.oanda.rates.RatesClient._
 import rx.oanda.utils.Heartbeat
-import rx.oanda.{ApiConnection, OandaEnvironment}
+import rx.oanda.{StreamingConnection, ApiConnection, OandaEnvironment}
 
 import scala.util._
 
 class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
-  extends ApiConnection {
+  extends ApiConnection with StreamingConnection {
 
-  private[oanda] val streamConnection: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool] = env.apiFlow[Long]
-
-  def rates(accountID: Long, instruments: Seq[String]): Source[Xor[Heartbeat, OandaTick], Unit] = {
-    val params = Map("accountId" → accountID.toString, "instruments" → instruments.mkString(","))
-    val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
-    Source.single(req → 42L).log("request")
-      .via(streamConnection).log("response")
-      .flatMapConcat {
-        case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
-          entity.dataBytes.log("chunks", _.utf8String)
-            .via(Framing.delimiter(ByteString("\n"), 1024, allowTruncation = true)).log("bytes", _.utf8String)
-            .via(CirceStreamSupport.decode(Decoder.decodeXor[Heartbeat, OandaTick]("heartbeat", "tick"))).log("decode")
-        case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
-        case (Failure(e), _) ⇒ Source.failed(e)
-        case _ ⇒ Source.failed(new Exception("Unknown state in rates"))
-      }
-  }
-
+  private[oanda] val streamingConnection = env.streamFlow[Long]
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  def prices(instruments: Seq[String]): Source[OandaTick, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
-    makeRequest[Vector[OandaTick]](req).mapConcat(identity)
+  def pricesStream(accountID: Long, instruments: Seq[String]): Source[Xor[Price, Heartbeat], Unit] = {
+    val params = Map("accountId" → accountID.toString, "instruments" → instruments.mkString(","))
+    val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
+    startStreaming[Price](req, "tick")
   }
 
-  def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] = {
-    val rawQuery = Seq(accountIdQuery(accountId), fieldsQuery, instrumentsQuery(instruments)).filter(_.nonEmpty).mkString("&")
-    val req = HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
-    makeRequest[Vector[Instrument]](req).mapConcat(identity)
+  def prices(instruments: Seq[String]): Source[Price, Unit] = {
+    val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
+    makeRequest[Vector[Price]](req).mapConcat(identity)
   }
+
+  private[oanda] def instrumentsRequest(accountId: Long, instruments: Seq[String] = Nil): HttpRequest = {
+    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), fieldsQuery).filter(_.nonEmpty).mkString("&")
+    HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
+  }
+
+  /**
+    * Get a list of tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.
+    *
+    * @param accountId   The account id to fetch the list of tradeable instruments for.
+    * @param instruments A list of instruments that are to be returned. If the instruments list is empty, all instruments will be returned.
+    * @return A Source to retrieve infos about all or the specified instruments.
+    */
+  def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
+    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).mapConcat(identity)
 
 }
 

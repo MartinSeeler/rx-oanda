@@ -41,7 +41,7 @@ class PositionDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         |{
@@ -55,7 +55,7 @@ class PositionDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
-  it must "parse the position list from valid json" in {
+  it must "parse a list of positions from valid json" in {
     val json =
       """
         |{

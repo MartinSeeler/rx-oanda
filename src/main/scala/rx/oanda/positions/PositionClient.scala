@@ -29,19 +29,22 @@ class PositionClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSys
 
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  def positions(accountId: Long): Source[Position, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions"), headers = env.headers)
-    makeRequest[Vector[Position]](req).mapConcat(identity)
-  }
+  private[oanda] def positionsRequest(accountId: Long): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions"), headers = env.headers)
 
-  def position(accountId: Long, instrument: String): Source[Position, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
-    makeRequest[Position](req)
-  }
+  private[oanda] def positionRequest(accountId: Long, instrument: String): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
 
-  def closePosition(accountId: Long, instrument: String): Source[PositionCloseEvent, Unit] = {
-    val req = HttpRequest(DELETE, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
-    makeRequest[PositionCloseEvent](req)
-  }
+  private[oanda] def closePositionRequest(accountId: Long, instrument: String): HttpRequest =
+    HttpRequest(DELETE, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
+
+  def positions(accountId: Long): Source[Position, Unit] =
+    makeRequest[Vector[Position]](positionsRequest(accountId)).mapConcat(identity)
+
+  def position(accountId: Long, instrument: String): Source[Position, Unit] =
+    makeRequest[Position](positionRequest(accountId, instrument))
+
+  def closePosition(accountId: Long, instrument: String): Source[ClosedPosition, Unit] =
+    makeRequest[ClosedPosition](closePositionRequest(accountId, instrument))
 
 }

@@ -19,14 +19,14 @@ package rx.oanda.rates
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class OandaTick(instrument: String, time: Long, bid: Double, ask: Double)
+case class Price(instrument: String, time: Long, bid: Double, ask: Double)
 
-object OandaTick {
+object Price {
 
-  implicit val decodeOandaTick: Decoder[OandaTick] =
-    deriveFor[OandaTick].decoder
+  implicit val decodePrice: Decoder[Price] =
+    deriveFor[Price].decoder
 
   implicit val decodePrices =
-    Decoder.instance(_.get[Vector[OandaTick]]("prices"))
+    Decoder.instance(_.get[Vector[Price]]("prices"))
 
 }

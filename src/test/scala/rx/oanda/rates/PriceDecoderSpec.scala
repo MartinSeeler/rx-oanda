@@ -21,11 +21,11 @@ import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
 
-class OandaTickDecoderSpec extends FlatSpec with Matchers {
+class PriceDecoderSpec extends FlatSpec with Matchers {
 
-  behavior of "The Oanda Tick Decoder"
+  behavior of "The Price Decoder"
 
-  it must "parse a tick from valid json" in {
+  it must "parse a price from valid json" in {
     val json =
       """
         |{
@@ -35,12 +35,12 @@ class OandaTickDecoderSpec extends FlatSpec with Matchers {
         | "ask": 1.08668
         |}
       """.stripMargin
-    decode[OandaTick](json) should matchPattern {
-      case Xor.Right(OandaTick("EUR_USD", 1453847424597195L, 1.08646, 1.08668)) ⇒
+    decode[Price](json) should matchPattern {
+      case Xor.Right(Price("EUR_USD", 1453847424597195L, 1.08646, 1.08668)) ⇒
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         |{
@@ -49,7 +49,7 @@ class OandaTickDecoderSpec extends FlatSpec with Matchers {
         | "ask": 1.08668
         |}
       """.stripMargin
-    decode[OandaTick](json) should matchPattern {
+    decode[Price](json) should matchPattern {
       case Xor.Left(e: DecodingFailure) ⇒ //...
     }
   }
@@ -68,9 +68,9 @@ class OandaTickDecoderSpec extends FlatSpec with Matchers {
         | ]
         |}
       """.stripMargin
-    decode[Vector[OandaTick]](json) should matchPattern {
+    decode[Vector[Price]](json) should matchPattern {
       case Xor.Right(Vector(
-        OandaTick("EUR_USD", 1453847424597195L, 1.08646, 1.08668)
+        Price("EUR_USD", 1453847424597195L, 1.08646, 1.08668)
       )) ⇒
     }
   }

@@ -61,26 +61,46 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
     }
   }
 
-  it must "build the correct requests to get all account" in {
+  it must "build the correct requests to get all account in authenticated environments" in {
     forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.accountsRequest
       val practiceReq = practiceClient.accountsRequest
       val tradeReq = tradeClient.accountsRequest
 
       // match method
-      sandboxReq.method should be(HttpMethods.GET)
       practiceReq.method should be(HttpMethods.GET)
       tradeReq.method should be(HttpMethods.GET)
 
       // match uri
-      sandboxReq.uri.path.toString should be(s"/v1/accounts")
       practiceReq.uri.path.toString should be(s"/v1/accounts")
       tradeReq.uri.path.toString should be(s"/v1/accounts")
 
       // match headers
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
       practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
       tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+    }
+  }
+
+  it must "build the correct requests to get all account in non authenticated environments" in {
+    forAll("accountId") { (accountId: Long) ⇒
+      val sandboxReq = sandboxClient.accountsRequest("foobar")
+
+      sandboxReq.method should be(HttpMethods.GET)
+      sandboxReq.uri.path.toString should be(s"/v1/accounts")
+      sandboxReq.uri.rawQueryString shouldBe Some("username=foobar")
+      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
+    }
+  }
+
+  it must "fail to get all accounts with username in authenticated environments" in {
+    forAll("accountId") { (accountId: Long) ⇒
+      "practiceClient.accountsRequest(\"foobar\")" shouldNot typeCheck
+      "tradeClient.accountsRequest(\"foobar\")" shouldNot typeCheck
+    }
+  }
+
+  it must "fail to get all accounts without username in non-authenticated environments" in {
+    forAll("accountId") { (accountId: Long) ⇒
+      "sandboxClient.accountsRequest()" shouldNot typeCheck
     }
   }
 
@@ -88,13 +108,8 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
     forAll("accountId") { (accountId: Long) ⇒
       val sandboxReq = sandboxClient.createAccountRequest
 
-      // match method
       sandboxReq.method should be(HttpMethods.POST)
-
-      // match uri
       sandboxReq.uri.path.toString should be(s"/v1/accounts")
-
-      // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
     }
   }

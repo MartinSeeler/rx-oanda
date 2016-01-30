@@ -32,8 +32,11 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
   private[accounts] def accountRequest(accountId: Long): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/accounts/$accountId"), headers = env.headers)
 
-  private[accounts] val accountsRequest: HttpRequest =
+  private[accounts] def accountsRequest(implicit ev: A =:= WithAuth): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/accounts"), headers = env.headers)
+
+  private[accounts] def accountsRequest(username: String)(implicit ev: A =:= NoAuth): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/accounts").withRawQueryString(s"username=$username"), headers = env.headers)
 
   private[accounts] def createAccountRequest(implicit ev: A =:= NoAuth): HttpRequest =
     HttpRequest(POST, Uri(s"/v1/accounts"), headers = env.headers)
@@ -41,8 +44,11 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
   def account(accountId: Long): Source[Account, Unit] =
     makeRequest[Account](accountRequest(accountId))
 
-  def accounts: Source[ShortAccount, Unit] =
+  def accounts(implicit ev: A =:= WithAuth): Source[ShortAccount, Unit] =
     makeRequest[Vector[ShortAccount]](accountsRequest).mapConcat(identity)
+
+  def accounts(username: String)(implicit ev: A =:= NoAuth): Source[ShortAccount, Unit] =
+    makeRequest[Vector[ShortAccount]](accountsRequest(username)).mapConcat(identity)
 
   def createAccount(currency: Option[String] = None)(implicit ev: A =:= NoAuth): Source[SandboxAccount, Unit] =
     Source.empty // TODO: implement me when Sandbox API is back

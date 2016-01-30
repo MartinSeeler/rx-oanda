@@ -19,16 +19,16 @@ package rx.oanda.positions
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class PositionCloseEvent(
+case class ClosedPosition(
   ids: Vector[Long],
   instrument: String,
   totalUnits: Int,
   price: Double
 )
 
-object PositionCloseEvent {
+object ClosedPosition {
 
-  implicit val decodePositionCloseEvent: Decoder[PositionCloseEvent] =
-    deriveFor[PositionCloseEvent].decoder
+  implicit val decodeClosedPosition: Decoder[ClosedPosition] =
+    deriveFor[ClosedPosition].decoder
 
 }

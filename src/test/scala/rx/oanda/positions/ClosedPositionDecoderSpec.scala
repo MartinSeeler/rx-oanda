@@ -21,11 +21,11 @@ import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
 
-class PositionCloseEventDecoderSpec extends FlatSpec with Matchers {
+class ClosedPositionDecoderSpec extends FlatSpec with Matchers {
 
-  behavior of "The PositionCloseEvent Decoder"
+  behavior of "The ClosedPosition Decoder"
 
-  it must "parse a position close event from valid json" in {
+  it must "parse a closed position from valid json" in {
     val json =
       """
         |{
@@ -39,12 +39,12 @@ class PositionCloseEventDecoderSpec extends FlatSpec with Matchers {
         | "price" : 1.2345
         |}
       """.stripMargin
-    decode[PositionCloseEvent](json) should matchPattern {
-      case Xor.Right(PositionCloseEvent(Vector(12345, 12346, 12347), "EUR_USD", 1234, 1.2345)) ⇒
+    decode[ClosedPosition](json) should matchPattern {
+      case Xor.Right(ClosedPosition(Vector(12345, 12346, 12347), "EUR_USD", 1234, 1.2345)) ⇒
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         |{
@@ -57,7 +57,7 @@ class PositionCloseEventDecoderSpec extends FlatSpec with Matchers {
         | "price" : 1.2345
         |}
       """.stripMargin
-    decode[PositionCloseEvent](json) should matchPattern {
+    decode[ClosedPosition](json) should matchPattern {
       case Xor.Left(e: DecodingFailure) ⇒ //...
     }
   }

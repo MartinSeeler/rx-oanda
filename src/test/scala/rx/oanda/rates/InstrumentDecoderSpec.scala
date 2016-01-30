@@ -25,7 +25,7 @@ class InstrumentDecoderSpec extends FlatSpec with Matchers {
 
   behavior of "The Instrument Decoder"
 
-  it must "parse a position from valid json" in {
+  it must "parse an instrument from valid json" in {
     val json =
       """
         |{
@@ -45,7 +45,7 @@ class InstrumentDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
-  it must "fail on missing property" in {
+  it must "fail when a property is missing" in {
     val json =
       """
         |{

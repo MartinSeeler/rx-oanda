@@ -90,6 +90,15 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
       .expectNext(SandboxAccount("keith", "Rocir~olf4", 8954947L))
   }
 
+  it must "fail when no connection is possible" in {
+    new ApiConnection {
+      private[oanda] val apiConnection = Http().cachedHostConnectionPool[Long]("_", 8080)
+    }.makeRequest[SandboxAccount](HttpRequest(GET, "/sandboxAccount"))
+      .runWith(TestSink.probe(system))
+      .request(1)
+      .expectError()
+  }
+
   def cleanUp(): Unit = bindingFuture
     .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
     .onComplete(_ ⇒ system.shutdown())

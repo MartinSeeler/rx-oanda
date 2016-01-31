@@ -62,64 +62,54 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
   }
 
   it must "build the correct requests to get all account in authenticated environments" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      val practiceReq = practiceClient.accountsRequest
-      val tradeReq = tradeClient.accountsRequest
+    val practiceReq = practiceClient.accountsRequest
+    val tradeReq = tradeClient.accountsRequest
 
-      // match method
-      practiceReq.method should be(HttpMethods.GET)
-      tradeReq.method should be(HttpMethods.GET)
+    // match method
+    practiceReq.method should be(HttpMethods.GET)
+    tradeReq.method should be(HttpMethods.GET)
 
-      // match uri
-      practiceReq.uri.path.toString should be(s"/v1/accounts")
-      tradeReq.uri.path.toString should be(s"/v1/accounts")
+    // match uri
+    practiceReq.uri.path.toString should be(s"/v1/accounts")
+    tradeReq.uri.path.toString should be(s"/v1/accounts")
 
-      // match headers
-      practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
-      tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
-    }
+    // match headers
+    practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+    tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
   }
 
   it must "build the correct requests to get all account in non authenticated environments" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.accountsRequest("foobar")
+    forAll("accountName") { (accountName: String) ⇒
+      val sandboxReq = sandboxClient.accountsRequest(accountName)
 
       sandboxReq.method should be(HttpMethods.GET)
       sandboxReq.uri.path.toString should be(s"/v1/accounts")
-      sandboxReq.uri.rawQueryString shouldBe Some("username=foobar")
+      sandboxReq.uri.rawQueryString shouldBe Some(s"username=$accountName")
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
     }
   }
 
   it must "fail to get all accounts with username in authenticated environments" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      "practiceClient.accountsRequest(\"foobar\")" shouldNot typeCheck
-      "tradeClient.accountsRequest(\"foobar\")" shouldNot typeCheck
-    }
+    "practiceClient.accountsRequest(\"foobar\")" shouldNot typeCheck
+    "tradeClient.accountsRequest(\"foobar\")" shouldNot typeCheck
   }
 
   it must "fail to get all accounts without username in non-authenticated environments" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      "sandboxClient.accountsRequest()" shouldNot typeCheck
-    }
+    "sandboxClient.accountsRequest()" shouldNot typeCheck
   }
 
   it must "build the correct requests to create a sandbox account" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.createAccountRequest
+    val sandboxReq = sandboxClient.createAccountRequest
 
-      sandboxReq.method should be(HttpMethods.POST)
-      sandboxReq.uri.path.toString should be(s"/v1/accounts")
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
-    }
+    sandboxReq.method should be(HttpMethods.POST)
+    sandboxReq.uri.path.toString should be(s"/v1/accounts")
+    sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
   }
 
   it must "only allow to create an account when sandbox environment is used" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      "sandboxClient.createAccountRequest" should compile
-      "practiceClient.createAccountRequest" shouldNot typeCheck
-      "tradeClient.createAccountRequest" shouldNot typeCheck
-    }
+    "sandboxClient.createAccountRequest" should compile
+    "practiceClient.createAccountRequest" shouldNot typeCheck
+    "tradeClient.createAccountRequest" shouldNot typeCheck
   }
 
   def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.shutdown())

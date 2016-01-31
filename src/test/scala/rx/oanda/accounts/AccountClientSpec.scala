@@ -18,100 +18,88 @@ package rx.oanda.accounts
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpMethods
-import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
+import akka.http.scaladsl.Http.HostConnectionPool
+import akka.http.scaladsl.coding.Gzip
+import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.TestFrameworkInterface.Scalatest
-import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.testkit.scaladsl.TestSink
+import akka.stream.{ActorMaterializer, Materializer}
+import akka.util.ByteString
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
+import rx.oanda.OandaEnvironment._
+
+import scala.concurrent.Future
+import scala.util.Try
 
 class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with Scalatest {
 
   behavior of "The Account Client"
 
-  implicit val sys = ActorSystem()
+  implicit val system = ActorSystem()
   implicit val mat = ActorMaterializer()
-  import sys.dispatcher
+  import system.dispatcher
 
-  val sandboxClient = new AccountClient(OandaEnvironment.SandboxEnvironment)
-  val practiceClient = new AccountClient(OandaEnvironment.TradePracticeEnvironment("token"))
-  val tradeClient = new AccountClient(OandaEnvironment.TradeEnvironment("token"))
+  val serverSource = Http().bind("localhost", 8082)
 
-  it must "build the correct requests to get an account" in {
-    forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.accountRequest(accountId)
-      val practiceReq = practiceClient.accountRequest(accountId)
-      val tradeReq = tradeClient.accountRequest(accountId)
-
-      // match method
-      sandboxReq.method should be(HttpMethods.GET)
-      practiceReq.method should be(HttpMethods.GET)
-      tradeReq.method should be(HttpMethods.GET)
-
-      // match uri
-      sandboxReq.uri.path.toString should be(s"/v1/accounts/$accountId")
-      practiceReq.uri.path.toString should be(s"/v1/accounts/$accountId")
-      tradeReq.uri.path.toString should be(s"/v1/accounts/$accountId")
-
-      // match headers
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
-      practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
-      tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
-    }
+  val requestHandler: HttpRequest => Future[HttpResponse] = {
+    case HttpRequest(GET, Uri.Path("/v1/accounts"), _, _, _) =>
+      Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
+        data = Source.single(
+          "{\"accounts\":[{\"accountId\":8954947,\"accountName\":\"Primary\",\"accountCurrency\":\"USD\",\"marginRate\":0.05},{\"accountId\":8954946,\"accountName\":\"Demo\",\"accountCurrency\":\"EUR\",\"marginRate\":0.05}]}"
+        ).map(ByteString.fromString).via(Gzip.encoderFlow))))
+    case HttpRequest(GET, Uri.Path("/v1/accounts/8954947"), _, _, _) =>
+      Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
+        data = Source.single(
+          "{\"accountId\":8954947,\"accountName\":\"Primary\",\"balance\":100000,\"unrealizedPl\":1.1,\"realizedPl\":-2.2,\"marginUsed\":3.3,\"marginAvail\":100000,\"openTrades\":1,\"openOrders\":2,\"marginRate\":0.05,\"accountCurrency\":\"USD\"}"
+        ).map(ByteString.fromString).via(Gzip.encoderFlow))))
   }
 
-  it must "build the correct requests to get all account in authenticated environments" in {
-    val practiceReq = practiceClient.accountsRequest
-    val tradeReq = tradeClient.accountsRequest
+  val bindingFuture: Future[Http.ServerBinding] =
+    serverSource.to(Sink.foreach(_ handleWithAsyncHandler requestHandler)).run()
 
-    // match method
-    practiceReq.method should be(HttpMethods.GET)
-    tradeReq.method should be(HttpMethods.GET)
-
-    // match uri
-    practiceReq.uri.path.toString should be(s"/v1/accounts")
-    tradeReq.uri.path.toString should be(s"/v1/accounts")
-
-    // match headers
-    practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
-    tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+  implicit val WithAuthTestConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
+    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
+      Http().cachedHostConnectionPool[T]("localhost", 8082).log("connection")
   }
 
-  it must "build the correct requests to get all account in non authenticated environments" in {
-    forAll("accountName") { (accountName: String) ⇒
-      val sandboxReq = sandboxClient.accountsRequest(accountName)
-
-      sandboxReq.method should be(HttpMethods.GET)
-      sandboxReq.uri.path.toString should be(s"/v1/accounts")
-      sandboxReq.uri.rawQueryString shouldBe Some(s"username=$accountName")
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
-    }
+  implicit val NoAuthTestConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
+    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
+      Http().cachedHostConnectionPool[T]("localhost", 8082).log("connection")
   }
 
-  it must "fail to get all accounts with username in authenticated environments" in {
-    "practiceClient.accountsRequest(\"foobar\")" shouldNot typeCheck
-    "tradeClient.accountsRequest(\"foobar\")" shouldNot typeCheck
+  val noAuthClient = new AccountClient(OandaEnvironment.SandboxEnvironment)
+  val authClient = new AccountClient(OandaEnvironment.TradePracticeEnvironment("token"))
+
+  it must "retrieve all accounts with authentication" in {
+    authClient.accounts
+      .runWith(TestSink.probe[ShortAccount])
+      .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
+      .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
+      .expectComplete()
   }
 
-  it must "fail to get all accounts without username in non-authenticated environments" in {
-    "sandboxClient.accountsRequest()" shouldNot typeCheck
+  it must "retrieve all accounts without authentication" in {
+    noAuthClient.accounts("foobar")
+      .runWith(TestSink.probe[ShortAccount])
+      .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
+      .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
+      .expectComplete()
   }
 
-  it must "build the correct requests to create a sandbox account" in {
-    val sandboxReq = sandboxClient.createAccountRequest
-
-    sandboxReq.method should be(HttpMethods.POST)
-    sandboxReq.uri.path.toString should be(s"/v1/accounts")
-    sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
+  it must "retrieve a specific account with and without authentication" in {
+    authClient.account(8954947L)
+      .runWith(TestSink.probe[Account])
+      .requestNext(Account(8954947L, "Primary", 100000, 1.1, -2.2, 3.3, 100000, 1, 2, 0.05, "USD"))
+      .expectComplete()
   }
 
-  it must "only allow to create an account when sandbox environment is used" in {
-    "sandboxClient.createAccountRequest" should compile
-    "practiceClient.createAccountRequest" shouldNot typeCheck
-    "tradeClient.createAccountRequest" shouldNot typeCheck
-  }
-
-  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.shutdown())
+  def cleanUp(): Unit = bindingFuture
+    .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
+    .onComplete(_ ⇒ system.shutdown())
 
 }

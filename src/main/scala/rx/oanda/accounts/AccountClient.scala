@@ -41,15 +41,19 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
   private[accounts] def createAccountRequest(implicit ev: MustNotHaveAuth[A]): HttpRequest =
     HttpRequest(POST, Uri(s"/v1/accounts"), headers = env.headers)
 
+  /** Get account information. */
   def account(accountId: Long): Source[Account, Unit] =
     makeRequest[Account](accountRequest(accountId))
 
+  /** Get a list of accounts owned by the user. */
   def accounts(implicit ev: MustHaveAuth[A]): Source[ShortAccount, Unit] =
     makeRequest[Vector[ShortAccount]](accountsRequest).mapConcat(identity)
 
+  /** Get a list of accounts owned by the sandbox user. */
   def accounts(username: String)(implicit ev: MustNotHaveAuth[A]): Source[ShortAccount, Unit] =
     makeRequest[Vector[ShortAccount]](accountsRequest(username)).mapConcat(identity)
 
+  /** Create a new account. */
   def createAccount(currency: Option[String] = None)(implicit ev: MustNotHaveAuth[A]): Source[SandboxAccount, Unit] =
     Source.empty // TODO: implement me when Sandbox API is back
 

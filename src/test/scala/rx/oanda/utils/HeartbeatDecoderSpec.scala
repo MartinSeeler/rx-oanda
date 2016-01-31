@@ -25,7 +25,7 @@ class HeartbeatDecoderSpec extends FlatSpec with Matchers {
 
   behavior of "The Heartbeat Decoder"
 
-  it must "parse a hertbeat from valid json" in {
+  it must "parse a heartbeat from valid json" in {
     val json =
       """
         |{"time":"1453849454039260"}
@@ -35,7 +35,7 @@ class HeartbeatDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
-  it must "fail on invalid side" in {
+  it must "fail when timestamp is not a unix timestamp" in {
     val json =
       """
         |{"timestamp":"suchbernd"}

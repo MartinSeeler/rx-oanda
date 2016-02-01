@@ -33,7 +33,9 @@ case class OandaEnvironment[A <: OandaEnvironment.Auth](
   apiEndpoint: String,
   streamEndpoint: String,
   token: Option[String] = None
-)
+)  {
+  override def toString: String = name
+}
 
 object OandaEnvironment {
 

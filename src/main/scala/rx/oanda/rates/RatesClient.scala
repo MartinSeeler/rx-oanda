@@ -42,21 +42,25 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   private[oanda] val streamingConnection = env.streamFlow[Long]
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  def pricesStream(accountID: Long, instruments: Seq[String]): Source[Xor[Price, Heartbeat], Unit] = {
-    val params = Map("accountId" → accountID.toString, "instruments" → instruments.mkString(","))
-    val req = HttpRequest(GET, Uri(s"/v1/prices").withQuery(Query(params)), headers = env.headers)
-    startStreaming[Price](req, "tick")
+  private[oanda] def pricesStreamRequest(accountId: Long, instruments: Seq[String]): HttpRequest = {
+    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments)).filter(_.nonEmpty).mkString("&")
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQuery), headers = env.headers)
   }
 
-  def prices(instruments: Seq[String]): Source[Price, Unit] = {
-    val req = HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
-    makeRequest[Vector[Price]](req).mapConcat(identity)
+  private[oanda] def pricesReq(instruments: Seq[String]): HttpRequest = {
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
   }
 
   private[oanda] def instrumentsRequest(accountId: Long, instruments: Seq[String] = Nil): HttpRequest = {
     val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), fieldsQuery).filter(_.nonEmpty).mkString("&")
     HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
   }
+
+  def pricesStream(accountID: Long, instruments: Seq[String]): Source[Xor[Price, Heartbeat], Unit] =
+    startStreaming[Price](pricesStreamRequest(accountID, instruments), "tick")
+
+  def prices(instruments: Seq[String]): Source[Price, Unit] =
+    makeRequest[Vector[Price]](pricesReq(instruments)).mapConcat(identity)
 
   /**
     * Get a list of tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.

@@ -26,7 +26,7 @@ import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
 
-class RatesClientSpec extends FlatSpec with PropertyChecks with Matchers with Scalatest {
+class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers with Scalatest {
 
   behavior of "The Rates Client"
 
@@ -86,6 +86,60 @@ class RatesClientSpec extends FlatSpec with PropertyChecks with Matchers with Sc
       sandboxReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
       practiceReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
       tradeReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
+
+      // match headers
+      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
+      practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+      tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+    }
+  }
+
+  it must "build the correct request to get prices for specific instruments" in {
+      val sandboxReq = sandboxClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
+      val practiceReq = practiceClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
+      val tradeReq = tradeClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
+
+      // match method
+      sandboxReq.method should be(HttpMethods.GET)
+      practiceReq.method should be(HttpMethods.GET)
+      tradeReq.method should be(HttpMethods.GET)
+
+      // match uri
+      sandboxReq.uri.path.toString should be("/v1/prices")
+      practiceReq.uri.path.toString should be("/v1/prices")
+      tradeReq.uri.path.toString should be("/v1/prices")
+
+      // match querystring
+      sandboxReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
+      practiceReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
+      tradeReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
+
+      // match headers
+      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
+      practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+      tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
+  }
+
+  it must "build the correct request to stream prices for specific instruments" in {
+    forAll("accountId") { (accountId: Long) ⇒
+      val sandboxReq = sandboxClient.pricesStreamRequest(accountId, "EUR_USD" :: "EUR_GBP" :: Nil)
+      val practiceReq = practiceClient.pricesStreamRequest(accountId, "EUR_USD" :: "EUR_GBP" :: Nil)
+      val tradeReq = tradeClient.pricesStreamRequest(accountId, "EUR_USD" :: "EUR_GBP" :: Nil)
+
+      // match method
+      sandboxReq.method should be(HttpMethods.GET)
+      practiceReq.method should be(HttpMethods.GET)
+      tradeReq.method should be(HttpMethods.GET)
+
+      // match uri
+      sandboxReq.uri.path.toString should be("/v1/prices")
+      practiceReq.uri.path.toString should be("/v1/prices")
+      tradeReq.uri.path.toString should be("/v1/prices")
+
+      // match querystring
+      sandboxReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
+      practiceReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
+      tradeReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
 
       // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))

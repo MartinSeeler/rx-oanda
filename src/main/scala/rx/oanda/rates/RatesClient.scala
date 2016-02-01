@@ -72,6 +72,11 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
     makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).mapConcat(identity)
 
+  def midpointCandles(instrument: String): Source[MidpointCandle, Unit] = {
+    val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → "midpoint"))), headers = env.headers)
+    makeRequest[Vector[MidpointCandle]](req).mapConcat(identity)
+  }
+
 }
 
 object RatesClient {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 – 2016 Martin Seeler
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package rx.oanda.events
 
 import cats.data.Xor
@@ -17,6 +33,10 @@ object OandaEvent {
       case "MARKET_ORDER_CREATE" ⇒ c.as[MarketOrderCreated]
       case "STOP_ORDER_CREATE" ⇒ c.as[StopOrderCreated]
       case "LIMIT_ORDER_CREATE" ⇒ c.as[LimitOrderCreated]
+      case "MARKET_IF_TOUCHED_ORDER_CREATE" ⇒ c.as[MarketIfTouchedOrderCreated]
+      case "ORDER_UPDATE" ⇒ c.as[OrderUpdated]
+      case "ORDER_CANCEL" ⇒ c.as[OrderCanceled]
+      case "ORDER_FILLED" ⇒ c.as[OrderFilled]
       case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaEvent of type $otherwise", c.history))
     }
   }
@@ -109,4 +129,83 @@ case class LimitOrderCreated(
 ) extends OandaEvent
 object LimitOrderCreated {
   implicit val decodeLimitOrderCreated: Decoder[LimitOrderCreated] = deriveFor[LimitOrderCreated].decoder
+}
+
+case class MarketIfTouchedOrderCreated(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  side: Side,
+  units: Int,
+  price: Double,
+  expiry: Long,
+  reason: String,
+  lowerBound: Option[Double],
+  upperBound: Option[Double],
+  takeProfitPrice: Option[Double],
+  stopLossPrice: Option[Double],
+  trailingStopLossDistance: Option[Double]
+) extends OandaEvent
+object MarketIfTouchedOrderCreated {
+  implicit val decodeMarketIfTouchedOrderCreated: Decoder[MarketIfTouchedOrderCreated] =
+    deriveFor[MarketIfTouchedOrderCreated].decoder
+}
+
+
+case class OrderUpdated(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  units: Int,
+  price: Double,
+  orderId: Long,
+  reason: String,
+  lowerBound: Option[Double],
+  upperBound: Option[Double],
+  takeProfitPrice: Option[Double],
+  stopLossPrice: Option[Double],
+  trailingStopLossDistance: Option[Double]
+) extends OandaEvent
+object OrderUpdated {
+  implicit val decodeOrderUpdated: Decoder[OrderUpdated] =
+    deriveFor[OrderUpdated].decoder
+}
+
+case class OrderCanceled(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  orderId: Long,
+  reason: String
+) extends OandaEvent
+object OrderCanceled {
+  implicit val decodeOrderCanceled: Decoder[OrderCanceled] =
+    deriveFor[OrderCanceled].decoder
+}
+
+case class OrderFilled(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  units: Int,
+  side: Side,
+  price: Double,
+  pl: Double,
+  interest: Double,
+  accountBalance: Double,
+  orderId: Long,
+  lowerBound: Option[Double],
+  upperBound: Option[Double],
+  takeProfitPrice: Option[Double],
+  stopLossPrice: Option[Double],
+  trailingStopLossDistance: Option[Double],
+  tradeOpened: Option[TradeOpened],
+  tradeReduced: Option[TradeReduced]
+) extends OandaEvent
+object OrderFilled {
+  implicit val decodeOrderFilled: Decoder[OrderFilled] =
+    deriveFor[OrderFilled].decoder
 }

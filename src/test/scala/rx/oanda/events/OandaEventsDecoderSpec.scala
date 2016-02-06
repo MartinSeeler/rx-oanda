@@ -94,4 +94,90 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a MarketIfTouchedOrderCreated event from valid json" in {
+    val json =
+      """
+        |{
+        | "id": 176403882,
+        | "accountId": 6765103,
+        | "time": "1453326442000000",
+        | "type": "MARKET_IF_TOUCHED_ORDER_CREATE",
+        | "instrument": "EUR_USD",
+        | "units": 2,
+        | "side": "buy",
+        | "price": 1,
+        | "expiry": 1398902400,
+        | "reason": "CLIENT_REQUEST"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MarketIfTouchedOrderCreated(176403882L, 6765103L, 1453326442000000L, "EUR_USD", Buy, 2, 1, 1398902400L, "CLIENT_REQUEST", None, None, None, None, None)) ⇒
+    }
+  }
+
+  it must "parse a OrderUpdated event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403883,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "ORDER_UPDATE",
+        | "instrument" : "EUR_USD",
+        | "units" : 3,
+        | "price" : 1,
+        | "expiry" : 1398902400,
+        | "orderId" : 176403880,
+        | "reason" : "REPLACES_ORDER"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(OrderUpdated(176403883L, 6765103L, 1453326442000000L, "EUR_USD", 3, 1, 176403880L, "REPLACES_ORDER", None, None, None, None, None)) ⇒
+    }
+  }
+
+  it must "parse a OrderCanceled event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403881,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "ORDER_CANCEL",
+        | "orderId" : 176403880,
+        | "reason" : "CLIENT_REQUEST"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(OrderCanceled(176403881L, 6765103L, 1453326442000000L, 176403880L, "CLIENT_REQUEST")) ⇒
+    }
+  }
+
+  it must "parse a OrderFilled event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175685908,
+        | "accountId" : 2610411,
+        | "time" : "1453326442000000",
+        | "type" : "ORDER_FILLED",
+        | "instrument" : "EUR_USD",
+        | "units" : 2,
+        | "side" : "buy",
+        | "price" : 1.3821,
+        | "pl" : 0,
+        | "interest" : 0,
+        | "accountBalance" : 100000,
+        | "orderId" : 175685907,
+        | "tradeOpened" : {
+        |     "id" : 175685908,
+        |     "units" : 2
+        | }
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(OrderFilled(175685908L, 2610411L, 1453326442000000L, "EUR_USD", 2, Buy, 1.3821, 0,0,100000, 175685907L, None, None, None, None, None,Some(TradeOpened(175685908L, 2)), None)) ⇒
+    }
+  }
+
 }

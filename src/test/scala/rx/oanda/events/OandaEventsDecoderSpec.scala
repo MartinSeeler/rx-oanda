@@ -20,7 +20,7 @@ import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe.parse._
 import org.scalatest._
-import rx.oanda.utils.Buy
+import rx.oanda.utils.{Sell, Buy}
 
 class OandaEventsDecoderSpec extends FlatSpec with Matchers {
 
@@ -177,6 +177,49 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
       """.stripMargin
     decode[OandaEvent](json) should matchPattern {
       case Xor.Right(OrderFilled(175685908L, 2610411L, 1453326442000000L, "EUR_USD", 2, Buy, 1.3821, 0,0,100000, 175685907L, None, None, None, None, None,Some(TradeOpened(175685908L, 2)), None)) ⇒
+    }
+  }
+
+  it must "parse a TradeUpdated event from valid json" in {
+    val json =
+      """
+        |{
+        | "id": 176403884,
+        | "accountId": 6765103,
+        | "time": "1453326442000000",
+        | "type": "TRADE_UPDATE",
+        | "instrument": "EUR_USD",
+        | "units": 2,
+        | "side": "sell",
+        | "stopLossPrice": 1.1,
+        | "tradeId": 176403879
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(TradeUpdated(176403884L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 176403879L, None, Some(1.1), None)) ⇒
+    }
+  }
+
+  it must "parse a TradeClosed event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403885,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "TRADE_CLOSE",
+        | "instrument" : "EUR_USD",
+        | "units" : 2,
+        | "side" : "sell",
+        | "price" : 1.25918,
+        | "pl" : 0.0119,
+        | "interest" : 0,
+        | "accountBalance" : 100000.0119,
+        | "tradeId" : 176403879
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(TradeClosed(176403885L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 1.25918, 0.0119, 0, 100000.0119, 176403879L)) ⇒
     }
   }
 

@@ -37,6 +37,8 @@ object OandaEvent {
       case "ORDER_UPDATE" ⇒ c.as[OrderUpdated]
       case "ORDER_CANCEL" ⇒ c.as[OrderCanceled]
       case "ORDER_FILLED" ⇒ c.as[OrderFilled]
+      case "TRADE_UPDATE" ⇒ c.as[TradeUpdated]
+      case "TRADE_CLOSE" ⇒ c.as[TradeClosed]
       case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaEvent of type $otherwise", c.history))
     }
   }
@@ -208,4 +210,39 @@ case class OrderFilled(
 object OrderFilled {
   implicit val decodeOrderFilled: Decoder[OrderFilled] =
     deriveFor[OrderFilled].decoder
+}
+
+case class TradeUpdated(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  units: Int,
+  side: Side,
+  tradeId: Long,
+  takeProfitPrice: Option[Double],
+  stopLossPrice: Option[Double],
+  trailingStopLossDistance: Option[Double]
+) extends OandaEvent
+object TradeUpdated {
+  implicit val decodeTradeUpdated: Decoder[TradeUpdated] =
+    deriveFor[TradeUpdated].decoder
+}
+
+case class TradeClosed(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  units: Int,
+  side: Side,
+  price: Double,
+  pl: Double,
+  interest: Double,
+  accountBalance: Double,
+  tradeId: Long
+) extends OandaEvent
+object TradeClosed {
+  implicit val decodeTradeClosed: Decoder[TradeClosed] =
+    deriveFor[TradeClosed].decoder
 }

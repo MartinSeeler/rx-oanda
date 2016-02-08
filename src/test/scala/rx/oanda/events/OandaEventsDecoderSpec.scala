@@ -176,7 +176,7 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
         |}
       """.stripMargin
     decode[OandaEvent](json) should matchPattern {
-      case Xor.Right(OrderFilled(175685908L, 2610411L, 1453326442000000L, "EUR_USD", 2, Buy, 1.3821, 0,0,100000, 175685907L, None, None, None, None, None,Some(TradeOpened(175685908L, 2)), None)) ⇒
+      case Xor.Right(OrderFilled(175685908L, 2610411L, 1453326442000000L, "EUR_USD", 2, Buy, 1.3821, 0, 0, 100000, 175685907L, None, None, None, None, None, Some(TradeOpened(175685908L, 2)), None)) ⇒
     }
   }
 
@@ -220,6 +220,67 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
       """.stripMargin
     decode[OandaEvent](json) should matchPattern {
       case Xor.Right(TradeClosed(176403885L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 1.25918, 0.0119, 0, 100000.0119, 176403879L)) ⇒
+    }
+  }
+
+  it must "parse a MigrateTradeClosed event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403885,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "MIGRATE_TRADE_CLOSE",
+        | "instrument" : "EUR_USD",
+        | "units" : 2,
+        | "side" : "sell",
+        | "price" : 1.25918,
+        | "pl" : 0.0119,
+        | "interest" : 0,
+        | "accountBalance" : 100000.0119,
+        | "tradeId" : 176403879
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MigrateTradeClosed(176403885L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 1.25918, 0.0119, 0, 100000.0119, 176403879L)) ⇒
+    }
+  }
+
+  it must "parse a MigrateTradeOpened event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175685908,
+        | "accountId" : 2610411,
+        | "time" : "1453326442000000",
+        | "type" : "MIGRATE_TRADE_OPEN",
+        | "instrument" : "EUR_USD",
+        | "units" : 2,
+        | "side" : "buy",
+        | "price" : 1.3821,
+        | "tradeOpened" : {
+        |     "id" : 175685908,
+        |     "units" : 2
+        | }
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MigrateTradeOpened(175685908L, 2610411L, 1453326442000000L, "EUR_USD", 2, Buy, 1.3821, None, None, None, TradeOpened(175685908L, 2))) ⇒
+    }
+  }
+
+  it must "fail to parse something else" in {
+    val json =
+      """
+        |{
+        | "instrument": "EUR_USD",
+        | "time": "1453847424597195",
+        | "bid": 1.08646,
+        | "ask": 1.08668
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Left(e: DecodingFailure) ⇒ //...
     }
   }
 

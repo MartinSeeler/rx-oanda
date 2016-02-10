@@ -269,6 +269,29 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a TakeProfitFilled event from valid json" in {
+    val json =
+      """
+        |{
+        | "id": 175685954,
+        | "accountId": 1491998,
+        | "time": "1453326442000000",
+        | "type": "TAKE_PROFIT_FILLED",
+        | "units": 10,
+        | "tradeId": 175685930,
+        | "instrument": "EUR_USD",
+        | "side": "sell",
+        | "price": 1.38231,
+        | "pl": 0.0001,
+        | "interest": 0,
+        | "accountBalance": 100000.0001
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(TakeProfitFilled(175685954L, 1491998L, 1453326442000000L, "EUR_USD", 10, Sell, 1.38231, 0.0001, 0, 100000.0001, 175685930L)) ⇒
+    }
+  }
+
   it must "fail to parse something else" in {
     val json =
       """

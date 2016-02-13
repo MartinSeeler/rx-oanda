@@ -30,6 +30,8 @@ import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
 import rx.oanda.OandaEnvironment.{ConnectionPool, Auth}
 import rx.oanda.errors.OandaError._
+import rx.oanda.rates.candles.{CandleTypes, CandleType, CandleGranularity, CandleGranularities}
+import CandleGranularities.S5
 import rx.oanda.rates.RatesClient._
 import rx.oanda.utils.Heartbeat
 import rx.oanda.{StreamingConnection, ApiConnection, OandaEnvironment}
@@ -72,9 +74,14 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
     makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).mapConcat(identity)
 
-  def midpointCandles(instrument: String): Source[MidpointCandle, Unit] = {
-    val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → "midpoint"))), headers = env.headers)
-    makeRequest[Vector[MidpointCandle]](req).mapConcat(identity)
+  def instrumentHistory(instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk): Source[candleType.R, Unit] = {
+    val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "count" → count.toString))), headers = env.headers)
+    makeRequest[Vector[candleType.R]](req)(candleType.decoder).mapConcat(identity)
+  }
+
+  def instrumentHistoryByDate(instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[candleType.R, Unit] = {
+    val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "start" → startTime.toString, "end" → endTime.toString, "includeFirst" → includeFirst.toString))), headers = env.headers)
+    makeRequest[Vector[candleType.R]](req)(candleType.decoder).mapConcat(identity)
   }
 
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.rates.candles
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._
@@ -33,7 +33,6 @@ object MidpointCandle {
 
   implicit val decodeMidpointCandle: Decoder[MidpointCandle] =
     deriveFor[MidpointCandle].decoder
-
 
   implicit val decodeMidpointCandles =
     Decoder.instance(_.get[Vector[MidpointCandle]]("candles"))

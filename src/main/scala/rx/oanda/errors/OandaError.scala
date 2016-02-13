@@ -48,7 +48,7 @@ object OandaError {
 
     def asErrorStream = entity.dataBytes.log("bytes", _.utf8String)
       .via(CirceStreamSupport.decode[OandaError]).log("decode")
-      .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError)))
+      .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError))).log("oanda-error")
 
   }
 

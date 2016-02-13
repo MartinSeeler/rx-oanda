@@ -35,11 +35,11 @@ trait ApiConnection {
       .via(apiConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, _, entity, _)), _) ⇒
-          entity.dataBytes
-            .via(Gzip.decoderFlow)
+          entity.dataBytes.log("gzip-bytes", _.utf8String)
+            .via(Gzip.decoderFlow).log("bytes", _.utf8String)
             .via(CirceStreamSupport.decode[R]).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)
-      }
+      }.log("api-request")
 
 }

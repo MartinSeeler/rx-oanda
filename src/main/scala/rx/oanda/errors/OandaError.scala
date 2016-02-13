@@ -35,8 +35,10 @@ object OandaError {
       case 2 ⇒ c.as[MissingArgument]
       case 3 ⇒ c.as[MissingAuthorization]
       case 4 ⇒ c.as[InvalidAuhtorization]
+      case 36 ⇒ c.as[InvalidRange]
       case 40 ⇒ c.as[MalformedQueryString]
       case 46 ⇒ c.as[InvalidInstrument]
+      case 47 ⇒ c.as[ArgumentConflict]
       case 68 ⇒ c.as[RateLimitViolation]
       case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaError with code $otherwise", c.history))
     }
@@ -88,8 +90,20 @@ object InvalidInstrument {
     deriveFor[InvalidInstrument].decoder
 }
 
+case class InvalidRange(message: String) extends OandaError
+object InvalidRange {
+  implicit val decodeInvalidRange: Decoder[InvalidRange] =
+    deriveFor[InvalidRange].decoder
+}
+
 case class MalformedQueryString(message: String) extends OandaError
 object MalformedQueryString {
   implicit val decodeMalformedQueryString: Decoder[MalformedQueryString] =
     deriveFor[MalformedQueryString].decoder
+}
+
+case class ArgumentConflict(message: String) extends OandaError
+object ArgumentConflict {
+  implicit val decodeArgumentConflict: Decoder[ArgumentConflict] =
+    deriveFor[ArgumentConflict].decoder
 }

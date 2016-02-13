@@ -81,6 +81,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse an invalid range error" in {
+    val json =
+      """
+        |{
+        | "code": 36,
+        | "message": "The value specified is not in the valid range: Resulting candle count is larger than maximum allowed: 5000",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(InvalidRange("The value specified is not in the valid range: Resulting candle count is larger than maximum allowed: 5000")) ⇒
+    }
+  }
+
   it must "parse a malformed query string error" in {
     val json =
       """
@@ -106,6 +120,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
       """.stripMargin
     decode[OandaError](json) should matchPattern {
       case Xor.Right(InvalidInstrument("Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument")) ⇒
+    }
+  }
+
+  it must "parse an argument conflict error" in {
+    val json =
+      """
+        |{
+        | "code": 47,
+        | "message": "Argument conflict found: [includeFirst] cannot be specified if [start] is not specified.",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(ArgumentConflict("Argument conflict found: [includeFirst] cannot be specified if [start] is not specified.")) ⇒
     }
   }
 

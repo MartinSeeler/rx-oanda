@@ -37,6 +37,7 @@ object OandaError {
       case 4 ⇒ c.as[InvalidAuhtorization]
       case 36 ⇒ c.as[InvalidRange]
       case 40 ⇒ c.as[MalformedQueryString]
+      case 45 ⇒ c.as[InvalidTimestamp]
       case 46 ⇒ c.as[InvalidInstrument]
       case 47 ⇒ c.as[ArgumentConflict]
       case 68 ⇒ c.as[RateLimitViolation]
@@ -88,6 +89,12 @@ case class RateLimitViolation(message: String) extends OandaError
 object RateLimitViolation {
   implicit val decodeRateLimitViolation: Decoder[RateLimitViolation] =
     deriveFor[RateLimitViolation].decoder
+}
+
+case class InvalidTimestamp(message: String) extends OandaError
+object InvalidTimestamp {
+  implicit val decodeInvalidTimestamp: Decoder[InvalidTimestamp] =
+    deriveFor[InvalidTimestamp].decoder
 }
 
 case class InvalidInstrument(message: String) extends OandaError

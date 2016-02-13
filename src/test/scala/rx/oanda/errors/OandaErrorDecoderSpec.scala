@@ -109,6 +109,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse an invalid timestamp error" in {
+    val json =
+      """
+        |{
+        | "code" : 45,
+        | "message" : "Invalid timestamp: [since] parameter",
+        | "moreInfo" : "http:\/\/developer.oanda.com\/docs\/v1\/troubleshooting\/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(InvalidTimestamp("Invalid timestamp: [since] parameter")) ⇒
+    }
+  }
+
   it must "parse an invalid instrument error" in {
     val json =
       """

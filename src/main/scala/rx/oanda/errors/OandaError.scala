@@ -40,7 +40,7 @@ object OandaError {
       case 46 ⇒ c.as[InvalidInstrument]
       case 47 ⇒ c.as[ArgumentConflict]
       case 68 ⇒ c.as[RateLimitViolation]
-      case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaError with code $otherwise", c.history))
+      case otherwise ⇒ c.as[UnknownOandaError]
     }
   }
 
@@ -52,6 +52,12 @@ object OandaError {
 
   }
 
+}
+
+case class UnknownOandaError(code: Int, message: String, moreInfo: String) extends OandaError
+object UnknownOandaError {
+  implicit val decodeUnknownOandaError: Decoder[UnknownOandaError] =
+    deriveFor[UnknownOandaError].decoder
 }
 
 case class InvalidArgument(message: String) extends OandaError

@@ -151,11 +151,25 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
-  it must "fail on invalid error code" in {
+
+  it must "parse an unknown oanda error if an error code is provided but not mapped yet" in {
     val json =
       """
         |{
-        | "code": -1,
+        | "code": 1337,
+        | "message": "There was an error which is not mapped to any case class yet!",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(UnknownOandaError(1337, "There was an error which is not mapped to any case class yet!", "http://developer.oanda.com/docs/v1/troubleshooting/#errors")) ⇒
+    }
+  }
+
+  it must "fail to parse an error without an error code" in {
+    val json =
+      """
+        |{
         | "message": "This should fail",
         | "moreInfo": "htt://example.com"
         |}

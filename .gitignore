@@ -191,5 +191,6 @@ Temporary Items
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
-src/main/scala/io/martinseeler/rxoanda/AccountTest.scala
-src/main/scala/rx/oanda/AccountTest.scala
+src/main/scala/examples
+src/main/scala/examples/*
+src/main/resources/application.conf

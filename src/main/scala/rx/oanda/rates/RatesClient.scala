@@ -44,8 +44,8 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   private[oanda] val streamingConnection = env.streamFlow[Long]
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  private[oanda] def pricesStreamRequest(accountId: Long, instruments: Seq[String]): HttpRequest = {
-    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments)).filter(_.nonEmpty).mkString("&")
+  private[oanda] def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: String = "undefined"): HttpRequest = {
+    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), s"sessionId=$sessionId").filter(_.nonEmpty).mkString("&")
     HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQuery), headers = env.headers)
   }
 
@@ -53,16 +53,24 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
     HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
   }
 
+  private[oanda] def pricesSinceReq(instruments: Seq[String], since: Long): HttpRequest = {
+    val rawQuery = Seq(instrumentsQuery(instruments), s"since=$since").filter(_.nonEmpty).mkString("&")
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQuery), headers = env.headers)
+  }
+
   private[oanda] def instrumentsRequest(accountId: Long, instruments: Seq[String] = Nil): HttpRequest = {
     val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), fieldsQuery).filter(_.nonEmpty).mkString("&")
     HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
   }
 
-  def pricesStream(accountID: Long, instruments: Seq[String]): Source[Xor[Price, Heartbeat], Unit] =
-    startStreaming[Price](pricesStreamRequest(accountID, instruments), "tick")
+  def livePricesStream(accountID: Long, instruments: Seq[String], sessionId: String = "undefined"): Source[Xor[Price, Heartbeat], Unit] =
+    startStreaming[Price](pricesStreamRequest(accountID, instruments), "tick").log("price")
 
-  def prices(instruments: Seq[String]): Source[Price, Unit] =
-    makeRequest[Vector[Price]](pricesReq(instruments)).mapConcat(identity)
+  def latestPrices(instruments: Seq[String]): Source[Price, Unit] =
+    makeRequest[Vector[Price]](pricesReq(instruments)).log("prices").mapConcat(identity).log("price")
+
+  def historicalPrices(instruments: Seq[String], after: Long): Source[Price, Unit] =
+    makeRequest[Vector[Price]](pricesSinceReq(instruments, after)).log("prices-since").mapConcat(identity).log("price")
 
   /**
     * Get a list of tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.
@@ -72,16 +80,16 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
     * @return A Source to retrieve infos about all or the specified instruments.
     */
   def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
-    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).mapConcat(identity)
+    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).log("instruments").mapConcat(identity).log("instrument")
 
-  def instrumentHistory(instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk): Source[candleType.R, Unit] = {
+  def latestCandles(instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk): Source[candleType.R, Unit] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "count" → count.toString))), headers = env.headers)
-    makeRequest[Vector[candleType.R]](req)(candleType.decoder).mapConcat(identity)
+    makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-count").mapConcat(identity).log("candle")
   }
 
-  def instrumentHistoryByDate(instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[candleType.R, Unit] = {
+  def historicalCandles(instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[candleType.R, Unit] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "start" → startTime.toString, "end" → endTime.toString, "includeFirst" → includeFirst.toString))), headers = env.headers)
-    makeRequest[Vector[candleType.R]](req)(candleType.decoder).mapConcat(identity)
+    makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-date").mapConcat(identity).log("candle")
   }
 
 }

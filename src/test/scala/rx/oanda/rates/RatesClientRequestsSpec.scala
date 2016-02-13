@@ -19,6 +19,7 @@ package rx.oanda.rates
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.testkit.TestFrameworkInterface.Scalatest
 import akka.stream.ActorMaterializer
@@ -136,10 +137,23 @@ class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers
       practiceReq.uri.path.toString should be("/v1/prices")
       tradeReq.uri.path.toString should be("/v1/prices")
 
-      // match querystring
-      sandboxReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
-      practiceReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
-      tradeReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP")
+      val sandboxQuery = sandboxReq.uri.query()
+      sandboxQuery.toMap should have size 3
+      sandboxQuery.get("accountId") shouldBe Some(accountId.toString)
+      sandboxQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+      sandboxQuery.get("sessionId") shouldBe Some("undefined")
+
+      val practiceQuery = practiceReq.uri.query()
+      practiceQuery.toMap should have size 3
+      practiceQuery.get("accountId") shouldBe Some(accountId.toString)
+      practiceQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+      practiceQuery.get("sessionId") shouldBe Some("undefined")
+
+      val tradeQuery = tradeReq.uri.query()
+      tradeQuery.toMap should have size 3
+      tradeQuery.get("accountId") shouldBe Some(accountId.toString)
+      tradeQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+      tradeQuery.get("sessionId") shouldBe Some("undefined")
 
       // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))

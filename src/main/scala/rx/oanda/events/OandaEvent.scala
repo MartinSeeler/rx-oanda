@@ -48,6 +48,9 @@ object OandaEvent {
       case "MARGIN_CALL_EXIT" ⇒ c.as[MarginCallExited]
       case "MARGIN_CLOSEOUT" ⇒ c.as[MarginCloseoutTriggered]
       case "SET_MARGIN_RATE" ⇒ c.as[MarginRateChanged]
+      case "TRANSFER_FUNDS" ⇒ c.as[FundsTransfered]
+      case "DAILY_INTEREST" ⇒ c.as[DailyInterest]
+      case "FEE" ⇒ c.as[Fee]
       case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaEvent of type $otherwise", c.history))
     }
   }
@@ -393,4 +396,43 @@ case class MarginRateChanged(
 object MarginRateChanged {
   implicit val decodeMarginRateChanged: Decoder[MarginRateChanged] =
     deriveFor[MarginRateChanged].decoder
+}
+
+case class FundsTransfered(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  amount: Double,
+  accountBalance: Double,
+  reason: String
+) extends OandaEvent
+object FundsTransfered {
+  implicit val decodeFundsTransfered: Decoder[FundsTransfered] =
+    deriveFor[FundsTransfered].decoder
+}
+
+case class DailyInterest(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  interest: Double,
+  accountBalance: Double
+) extends OandaEvent
+object DailyInterest {
+  implicit val decodeDailyInterest: Decoder[DailyInterest] =
+    deriveFor[DailyInterest].decoder
+}
+
+case class Fee (
+  id: Long,
+  accountId: Long,
+  time: Long,
+  amount: Double,
+  accountBalance: Double,
+  reason: String
+) extends OandaEvent
+object Fee {
+  implicit val decodeFee: Decoder[Fee] =
+    deriveFor[Fee].decoder
 }

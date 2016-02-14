@@ -407,6 +407,60 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a FundsTransfered event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403878,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "TRANSFER_FUNDS",
+        | "amount" : 100000,
+        | "accountBalance" : 100000,
+        | "reason" : "CLIENT_REQUEST"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(FundsTransfered(176403878L, 6765103L, 1453326442000000L, 100000.0, 100000.0, "CLIENT_REQUEST")) ⇒
+    }
+  }
+
+  it must "parse a DailyInterest event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739363,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "DAILY_INTEREST",
+        | "instrument" : "EUR_USD",
+        | "interest" : 10.0414,
+        | "accountBalance" : 99999.9992
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(DailyInterest(175739363L, 1491998L, 1453326442000000L, "EUR_USD", 10.0414, 99999.9992)) ⇒
+    }
+  }
+
+  it must "parse a Fee event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739369,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "FEE",
+        | "amount" : -10.0414,
+        | "accountBalance" : 99999.9992,
+        | "reason" : "FUNDS"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(Fee(175739369L, 1491998L, 1453326442000000L, -10.0414, 99999.9992, "FUNDS")) ⇒
+    }
+  }
+
   it must "fail to parse something else" in {
     val json =
       """

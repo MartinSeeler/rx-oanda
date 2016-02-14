@@ -29,7 +29,7 @@ case class ShortAccount(
 object ShortAccount {
 
   implicit val decodeShortAccount: Decoder[ShortAccount] =
-    deriveFor[ShortAccount].decoder
+    deriveDecoder
 
   implicit val decodeShortAccounts =
     Decoder.instance(_.get[Vector[ShortAccount]]("accounts"))

@@ -29,8 +29,7 @@ case class Position(
 
 object Position {
 
-  implicit val decodePosition: Decoder[Position] =
-    deriveFor[Position].decoder
+  implicit val decodePosition: Decoder[Position] = deriveDecoder
 
   implicit val decodePositions =
     Decoder.instance(_.get[Vector[Position]]("positions"))

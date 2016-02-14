@@ -23,10 +23,7 @@ case class Price(instrument: String, time: Long, bid: Double, ask: Double)
 
 object Price {
 
-  implicit val decodePrice: Decoder[Price] =
-    deriveFor[Price].decoder
-
-  implicit val decodePrices =
-    Decoder.instance(_.get[Vector[Price]]("prices"))
+  implicit val decodePrice: Decoder[Price] = deriveDecoder
+  implicit val decodePrices = Decoder.instance(_.get[Vector[Price]]("prices"))
 
 }

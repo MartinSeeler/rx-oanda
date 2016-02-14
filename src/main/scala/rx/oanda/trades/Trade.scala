@@ -35,10 +35,8 @@ case class Trade(
 
 object Trade {
 
-  implicit val decodeTrade: Decoder[Trade] =
-    deriveFor[Trade].decoder
+  implicit val decodeTrade: Decoder[Trade] = deriveDecoder
 
-  implicit val decodeTrades =
-    Decoder.instance(_.get[Vector[Trade]]("trades"))
+  implicit val decodeTrades = Decoder.instance(_.get[Vector[Trade]]("trades"))
 
 }

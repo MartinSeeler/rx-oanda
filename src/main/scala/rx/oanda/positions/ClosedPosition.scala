@@ -28,7 +28,6 @@ case class ClosedPosition(
 
 object ClosedPosition {
 
-  implicit val decodeClosedPosition: Decoder[ClosedPosition] =
-    deriveFor[ClosedPosition].decoder
+  implicit val decodeClosedPosition: Decoder[ClosedPosition] = deriveDecoder
 
 }

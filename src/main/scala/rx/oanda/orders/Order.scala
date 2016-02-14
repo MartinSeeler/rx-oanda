@@ -39,8 +39,7 @@ case class Order(
 
 object Order {
 
-  implicit val decodeOrder: Decoder[Order] =
-    deriveFor[Order].decoder
+  implicit val decodeOrder: Decoder[Order] = deriveDecoder
 
   implicit val decodeOrders =
     Decoder.instance(_.get[Vector[Order]]("orders"))

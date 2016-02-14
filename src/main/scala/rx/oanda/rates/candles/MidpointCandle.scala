@@ -31,8 +31,7 @@ case class MidpointCandle(
 
 object MidpointCandle {
 
-  implicit val decodeMidpointCandle: Decoder[MidpointCandle] =
-    deriveFor[MidpointCandle].decoder
+  implicit val decodeMidpointCandle: Decoder[MidpointCandle] = deriveDecoder
 
   implicit val decodeMidpointCandles =
     Decoder.instance(_.get[Vector[MidpointCandle]]("candles"))

@@ -58,12 +58,15 @@ object OandaEvent {
 }
 
 case class TradeOpened(id: Long, units: Int)
+
 object TradeOpened {
-  implicit val decodeTradeOpened: Decoder[TradeOpened] = deriveFor[TradeOpened].decoder
+  implicit val decodeTradeOpened: Decoder[TradeOpened] = deriveDecoder
 }
+
 case class TradeReduced(id: Long, units: Int, pl: Double, interest: Double)
+
 object TradeReduced {
-  implicit val decodeTradeReduced: Decoder[TradeReduced] = deriveFor[TradeReduced].decoder
+  implicit val decodeTradeReduced: Decoder[TradeReduced] = deriveDecoder
 }
 
 /**
@@ -89,8 +92,9 @@ case class MarketOrderCreated(
   tradeOpened: Option[TradeOpened],
   tradeReduced: Option[TradeReduced]
 ) extends OandaEvent
+
 object MarketOrderCreated {
-  implicit val decodeMarketorderCreated: Decoder[MarketOrderCreated] = deriveFor[MarketOrderCreated].decoder
+  implicit val decodeMarketorderCreated: Decoder[MarketOrderCreated] = deriveDecoder
 }
 
 /**
@@ -115,8 +119,9 @@ case class StopOrderCreated(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
 ) extends OandaEvent
+
 object StopOrderCreated {
-  implicit val decodeStopOrderCreated: Decoder[StopOrderCreated] = deriveFor[StopOrderCreated].decoder
+  implicit val decodeStopOrderCreated: Decoder[StopOrderCreated] = deriveDecoder
 }
 
 /**
@@ -141,8 +146,9 @@ case class LimitOrderCreated(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
 ) extends OandaEvent
+
 object LimitOrderCreated {
-  implicit val decodeLimitOrderCreated: Decoder[LimitOrderCreated] = deriveFor[LimitOrderCreated].decoder
+  implicit val decodeLimitOrderCreated: Decoder[LimitOrderCreated] = deriveDecoder
 }
 
 case class MarketIfTouchedOrderCreated(
@@ -161,9 +167,9 @@ case class MarketIfTouchedOrderCreated(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
 ) extends OandaEvent
+
 object MarketIfTouchedOrderCreated {
-  implicit val decodeMarketIfTouchedOrderCreated: Decoder[MarketIfTouchedOrderCreated] =
-    deriveFor[MarketIfTouchedOrderCreated].decoder
+  implicit val decodeMarketIfTouchedOrderCreated: Decoder[MarketIfTouchedOrderCreated] = deriveDecoder
 }
 
 
@@ -182,9 +188,9 @@ case class OrderUpdated(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
 ) extends OandaEvent
+
 object OrderUpdated {
-  implicit val decodeOrderUpdated: Decoder[OrderUpdated] =
-    deriveFor[OrderUpdated].decoder
+  implicit val decodeOrderUpdated: Decoder[OrderUpdated] = deriveDecoder
 }
 
 case class OrderCanceled(
@@ -194,9 +200,9 @@ case class OrderCanceled(
   orderId: Long,
   reason: String
 ) extends OandaEvent
+
 object OrderCanceled {
-  implicit val decodeOrderCanceled: Decoder[OrderCanceled] =
-    deriveFor[OrderCanceled].decoder
+  implicit val decodeOrderCanceled: Decoder[OrderCanceled] = deriveDecoder
 }
 
 case class OrderFilled(
@@ -219,9 +225,9 @@ case class OrderFilled(
   tradeOpened: Option[TradeOpened],
   tradeReduced: Option[TradeReduced]
 ) extends OandaEvent
+
 object OrderFilled {
-  implicit val decodeOrderFilled: Decoder[OrderFilled] =
-    deriveFor[OrderFilled].decoder
+  implicit val decodeOrderFilled: Decoder[OrderFilled] = deriveDecoder
 }
 
 case class TradeUpdated(
@@ -236,9 +242,9 @@ case class TradeUpdated(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
 ) extends OandaEvent
+
 object TradeUpdated {
-  implicit val decodeTradeUpdated: Decoder[TradeUpdated] =
-    deriveFor[TradeUpdated].decoder
+  implicit val decodeTradeUpdated: Decoder[TradeUpdated] = deriveDecoder
 }
 
 case class TradeClosed(
@@ -254,9 +260,9 @@ case class TradeClosed(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object TradeClosed {
-  implicit val decodeTradeClosed: Decoder[TradeClosed] =
-    deriveFor[TradeClosed].decoder
+  implicit val decodeTradeClosed: Decoder[TradeClosed] = deriveDecoder
 }
 
 case class MigrateTradeClosed(
@@ -272,9 +278,9 @@ case class MigrateTradeClosed(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object MigrateTradeClosed {
-  implicit val decodeMigrateTradeClosed: Decoder[MigrateTradeClosed] =
-    deriveFor[MigrateTradeClosed].decoder
+  implicit val decodeMigrateTradeClosed: Decoder[MigrateTradeClosed] = deriveDecoder
 }
 
 case class MigrateTradeOpened(
@@ -290,9 +296,9 @@ case class MigrateTradeOpened(
   trailingStopLossDistance: Option[Double],
   tradeOpened: TradeOpened
 ) extends OandaEvent
+
 object MigrateTradeOpened {
-  implicit val decodeMigrateTradeOpened: Decoder[MigrateTradeOpened] =
-    deriveFor[MigrateTradeOpened].decoder
+  implicit val decodeMigrateTradeOpened: Decoder[MigrateTradeOpened] = deriveDecoder
 }
 
 case class TakeProfitFilled(
@@ -308,9 +314,9 @@ case class TakeProfitFilled(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object TakeProfitFilled {
-  implicit val decodeTakeProfitFilled: Decoder[TakeProfitFilled] =
-    deriveFor[TakeProfitFilled].decoder
+  implicit val decodeTakeProfitFilled: Decoder[TakeProfitFilled] = deriveDecoder
 }
 
 case class StopLossFilled(
@@ -326,9 +332,9 @@ case class StopLossFilled(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object StopLossFilled {
-  implicit val decodeStopLossFilled: Decoder[StopLossFilled] =
-    deriveFor[StopLossFilled].decoder
+  implicit val decodeStopLossFilled: Decoder[StopLossFilled] = deriveDecoder
 }
 
 case class TrailingStopFilled(
@@ -344,9 +350,9 @@ case class TrailingStopFilled(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object TrailingStopFilled {
-  implicit val decodeTrailingStopFilled: Decoder[TrailingStopFilled] =
-    deriveFor[TrailingStopFilled].decoder
+  implicit val decodeTrailingStopFilled: Decoder[TrailingStopFilled] = deriveDecoder
 }
 
 case class MarginCallEntered(
@@ -354,9 +360,9 @@ case class MarginCallEntered(
   accountId: Long,
   time: Long
 ) extends OandaEvent
+
 object MarginCallEntered {
-  implicit val decodeMarginCallEntered: Decoder[MarginCallEntered] =
-    deriveFor[MarginCallEntered].decoder
+  implicit val decodeMarginCallEntered: Decoder[MarginCallEntered] = deriveDecoder
 }
 
 case class MarginCallExited(
@@ -364,9 +370,9 @@ case class MarginCallExited(
   accountId: Long,
   time: Long
 ) extends OandaEvent
+
 object MarginCallExited {
-  implicit val decodeMarginCallExited: Decoder[MarginCallExited] =
-    deriveFor[MarginCallExited].decoder
+  implicit val decodeMarginCallExited: Decoder[MarginCallExited] = deriveDecoder
 }
 
 case class MarginCloseoutTriggered(
@@ -382,9 +388,9 @@ case class MarginCloseoutTriggered(
   accountBalance: Double,
   tradeId: Long
 ) extends OandaEvent
+
 object MarginCloseoutTriggered {
-  implicit val decodeMarginCloseoutTriggered: Decoder[MarginCloseoutTriggered] =
-    deriveFor[MarginCloseoutTriggered].decoder
+  implicit val decodeMarginCloseoutTriggered: Decoder[MarginCloseoutTriggered] = deriveDecoder
 }
 
 case class MarginRateChanged(
@@ -393,9 +399,9 @@ case class MarginRateChanged(
   time: Long,
   rate: Double
 ) extends OandaEvent
+
 object MarginRateChanged {
-  implicit val decodeMarginRateChanged: Decoder[MarginRateChanged] =
-    deriveFor[MarginRateChanged].decoder
+  implicit val decodeMarginRateChanged: Decoder[MarginRateChanged] = deriveDecoder
 }
 
 case class FundsTransfered(
@@ -406,9 +412,9 @@ case class FundsTransfered(
   accountBalance: Double,
   reason: String
 ) extends OandaEvent
+
 object FundsTransfered {
-  implicit val decodeFundsTransfered: Decoder[FundsTransfered] =
-    deriveFor[FundsTransfered].decoder
+  implicit val decodeFundsTransfered: Decoder[FundsTransfered] = deriveDecoder
 }
 
 case class DailyInterest(
@@ -419,12 +425,12 @@ case class DailyInterest(
   interest: Double,
   accountBalance: Double
 ) extends OandaEvent
+
 object DailyInterest {
-  implicit val decodeDailyInterest: Decoder[DailyInterest] =
-    deriveFor[DailyInterest].decoder
+  implicit val decodeDailyInterest: Decoder[DailyInterest] = deriveDecoder
 }
 
-case class Fee (
+case class Fee(
   id: Long,
   accountId: Long,
   time: Long,
@@ -432,7 +438,7 @@ case class Fee (
   accountBalance: Double,
   reason: String
 ) extends OandaEvent
+
 object Fee {
-  implicit val decodeFee: Decoder[Fee] =
-    deriveFor[Fee].decoder
+  implicit val decodeFee: Decoder[Fee] = deriveDecoder
 }

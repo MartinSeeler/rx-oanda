@@ -22,6 +22,5 @@ import io.circe.generic.semiauto._
 case class Heartbeat(time: Long)
 
 object Heartbeat {
-  implicit val decoderHeartbeat: Decoder[Heartbeat] =
-    deriveFor[Heartbeat].decoder
+  implicit val decoderHeartbeat: Decoder[Heartbeat] = deriveDecoder
 }

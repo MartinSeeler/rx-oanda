@@ -7,7 +7,7 @@ scalaVersion := "2.11.7"
 
 val akkaStreamV = "2.0.3"
 val akkaHttpV = "2.0.3"
-val circeV = "0.2.1"
+val circeV = "0.3.0"
 val scalaTestV = "2.2.6"
 val scalaCheckV = "1.12.5"
 
@@ -24,7 +24,7 @@ libraryDependencies ++= List(
   // circe for decoding
   "io.circe"          %% "circe-core"                        % circeV,
   "io.circe"          %% "circe-generic"                     % circeV,
-  "io.circe"          %% "circe-parse"                       % circeV,
+  "io.circe"          %% "circe-parse"                       % "0.2.1",
   // testing
   "org.scalatest"     %% "scalatest"                         % scalaTestV   % "test",
   "org.scalacheck"    %% "scalacheck"                        % scalaCheckV  % "test"

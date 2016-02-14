@@ -28,6 +28,6 @@ case class SandboxAccount(
 object SandboxAccount {
 
   implicit val decodeSandboxAccount: Decoder[SandboxAccount] =
-    deriveFor[SandboxAccount].decoder
+    deriveDecoder
 
 }

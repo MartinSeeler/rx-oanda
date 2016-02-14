@@ -56,67 +56,67 @@ object OandaError {
 }
 
 case class UnknownOandaError(code: Int, message: String, moreInfo: String) extends OandaError
+
 object UnknownOandaError {
-  implicit val decodeUnknownOandaError: Decoder[UnknownOandaError] =
-    deriveFor[UnknownOandaError].decoder
+  implicit val decodeUnknownOandaError: Decoder[UnknownOandaError] = deriveDecoder
 }
 
 case class InvalidArgument(message: String) extends OandaError
+
 object InvalidArgument {
-  implicit val decodeInvalidArgument: Decoder[InvalidArgument] =
-    deriveFor[InvalidArgument].decoder
+  implicit val decodeInvalidArgument: Decoder[InvalidArgument] = deriveDecoder
 }
 
 case class MissingArgument(message: String) extends OandaError
+
 object MissingArgument {
-  implicit val decodeMissingArgument: Decoder[MissingArgument] =
-    deriveFor[MissingArgument].decoder
+  implicit val decodeMissingArgument: Decoder[MissingArgument] = deriveDecoder
 }
 
 case class MissingAuthorization(message: String) extends OandaError
+
 object MissingAuthorization {
-  implicit val decodeMissingAuthorization: Decoder[MissingAuthorization] =
-    deriveFor[MissingAuthorization].decoder
+  implicit val decodeMissingAuthorization: Decoder[MissingAuthorization] = deriveDecoder
 }
 
 case class InvalidAuhtorization(message: String) extends OandaError
+
 object InvalidAuhtorization {
-  implicit val decodeInvalidAuhtorization: Decoder[InvalidAuhtorization] =
-    deriveFor[InvalidAuhtorization].decoder
+  implicit val decodeInvalidAuhtorization: Decoder[InvalidAuhtorization] = deriveDecoder
 }
 
 case class RateLimitViolation(message: String) extends OandaError
+
 object RateLimitViolation {
-  implicit val decodeRateLimitViolation: Decoder[RateLimitViolation] =
-    deriveFor[RateLimitViolation].decoder
+  implicit val decodeRateLimitViolation: Decoder[RateLimitViolation] = deriveDecoder
 }
 
 case class InvalidTimestamp(message: String) extends OandaError
+
 object InvalidTimestamp {
-  implicit val decodeInvalidTimestamp: Decoder[InvalidTimestamp] =
-    deriveFor[InvalidTimestamp].decoder
+  implicit val decodeInvalidTimestamp: Decoder[InvalidTimestamp] = deriveDecoder
 }
 
 case class InvalidInstrument(message: String) extends OandaError
+
 object InvalidInstrument {
-  implicit val decodeInvalidInstrument: Decoder[InvalidInstrument] =
-    deriveFor[InvalidInstrument].decoder
+  implicit val decodeInvalidInstrument: Decoder[InvalidInstrument] = deriveDecoder
 }
 
 case class InvalidRange(message: String) extends OandaError
+
 object InvalidRange {
-  implicit val decodeInvalidRange: Decoder[InvalidRange] =
-    deriveFor[InvalidRange].decoder
+  implicit val decodeInvalidRange: Decoder[InvalidRange] = deriveDecoder
 }
 
 case class MalformedQueryString(message: String) extends OandaError
+
 object MalformedQueryString {
-  implicit val decodeMalformedQueryString: Decoder[MalformedQueryString] =
-    deriveFor[MalformedQueryString].decoder
+  implicit val decodeMalformedQueryString: Decoder[MalformedQueryString] = deriveDecoder
 }
 
 case class ArgumentConflict(message: String) extends OandaError
+
 object ArgumentConflict {
-  implicit val decodeArgumentConflict: Decoder[ArgumentConflict] =
-    deriveFor[ArgumentConflict].decoder
+  implicit val decodeArgumentConflict: Decoder[ArgumentConflict] = deriveDecoder
 }

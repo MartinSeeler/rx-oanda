@@ -35,8 +35,7 @@ case class BidAskCandle(
 
 object BidAskCandle {
 
-  implicit val decodeBidAskCandle: Decoder[BidAskCandle] =
-    deriveFor[BidAskCandle].decoder
+  implicit val decodeBidAskCandle: Decoder[BidAskCandle] = deriveDecoder
 
   implicit val decodeBidAskCandles =
     Decoder.instance(_.get[Vector[BidAskCandle]]("candles"))

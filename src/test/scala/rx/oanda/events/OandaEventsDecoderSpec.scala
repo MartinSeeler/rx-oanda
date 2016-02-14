@@ -292,6 +292,52 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a StopLossFilled event from valid json" in {
+    val json =
+      """
+        |{
+        | "id": 175685918,
+        | "accountId": 1403479,
+        | "time": "1453326442000000",
+        | "type": "STOP_LOSS_FILLED",
+        | "units": 10,
+        | "tradeId": 175685917,
+        | "instrument": "EUR_USD",
+        | "side": "sell",
+        | "price": 1.3821,
+        | "pl": -0.0003,
+        | "interest": 0,
+        | "accountBalance": 99999.9997
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(StopLossFilled(175685918L, 1403479L, 1453326442000000L, "EUR_USD", 10, Sell, 1.3821, -0.0003, 0, 99999.9997, 175685917L)) ⇒
+    }
+  }
+
+  it must "parse a TrailingStopFilled event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739353,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "TRAILING_STOP_FILLED",
+        | "units" : 10,
+        | "tradeId" : 175739352,
+        | "instrument" : "EUR_USD",
+        | "side" : "sell",
+        | "price" : 1.38137,
+        | "pl" : -0.0009,
+        | "interest" : 0,
+        | "accountBalance" : 99999.9992
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(TrailingStopFilled(175739353L, 1491998L, 1453326442000000L, "EUR_USD", 10, Sell, 1.38137, -0.0009, 0, 99999.9992, 175739352L)) ⇒
+    }
+  }
+
   it must "fail to parse something else" in {
     val json =
       """

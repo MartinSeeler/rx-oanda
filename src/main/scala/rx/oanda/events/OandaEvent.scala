@@ -44,6 +44,10 @@ object OandaEvent {
       case "TAKE_PROFIT_FILLED" ⇒ c.as[TakeProfitFilled]
       case "STOP_LOSS_FILLED" ⇒ c.as[StopLossFilled]
       case "TRAILING_STOP_FILLED" ⇒ c.as[TrailingStopFilled]
+      case "MARGIN_CALL_ENTER" ⇒ c.as[MarginCallEntered]
+      case "MARGIN_CALL_EXIT" ⇒ c.as[MarginCallExited]
+      case "MARGIN_CLOSEOUT" ⇒ c.as[MarginCloseoutTriggered]
+      case "SET_MARGIN_RATE" ⇒ c.as[MarginRateChanged]
       case otherwise ⇒ Xor.left(DecodingFailure(s"Unknown OandaEvent of type $otherwise", c.history))
     }
   }
@@ -340,4 +344,53 @@ case class TrailingStopFilled(
 object TrailingStopFilled {
   implicit val decodeTrailingStopFilled: Decoder[TrailingStopFilled] =
     deriveFor[TrailingStopFilled].decoder
+}
+
+case class MarginCallEntered(
+  id: Long,
+  accountId: Long,
+  time: Long
+) extends OandaEvent
+object MarginCallEntered {
+  implicit val decodeMarginCallEntered: Decoder[MarginCallEntered] =
+    deriveFor[MarginCallEntered].decoder
+}
+
+case class MarginCallExited(
+  id: Long,
+  accountId: Long,
+  time: Long
+) extends OandaEvent
+object MarginCallExited {
+  implicit val decodeMarginCallExited: Decoder[MarginCallExited] =
+    deriveFor[MarginCallExited].decoder
+}
+
+case class MarginCloseoutTriggered(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  instrument: String,
+  units: Int,
+  side: Side,
+  price: Double,
+  pl: Double,
+  interest: Double,
+  accountBalance: Double,
+  tradeId: Long
+) extends OandaEvent
+object MarginCloseoutTriggered {
+  implicit val decodeMarginCloseoutTriggered: Decoder[MarginCloseoutTriggered] =
+    deriveFor[MarginCloseoutTriggered].decoder
+}
+
+case class MarginRateChanged(
+  id: Long,
+  accountId: Long,
+  time: Long,
+  rate: Double
+) extends OandaEvent
+object MarginRateChanged {
+  implicit val decodeMarginRateChanged: Decoder[MarginRateChanged] =
+    deriveFor[MarginRateChanged].decoder
 }

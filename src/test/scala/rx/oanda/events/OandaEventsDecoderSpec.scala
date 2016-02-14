@@ -338,6 +338,75 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse a MarginCallEntered event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739360,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "MARGIN_CALL_ENTER"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MarginCallEntered(175739360L, 1491998L, 1453326442000000L)) ⇒
+    }
+  }
+
+  it must "parse a MarginCallExited event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739360,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "MARGIN_CALL_EXIT"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MarginCallExited(175739360L, 1491998L, 1453326442000000L)) ⇒
+    }
+  }
+
+  it must "parse a MarginCloseoutTriggered event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 176403889,
+        | "accountId" : 6765103,
+        | "time" : "1453326442000000",
+        | "type" : "MARGIN_CLOSEOUT",
+        | "instrument" : "EUR_USD",
+        | "units" : 2,
+        | "side" : "sell",
+        | "price" : 1.25918,
+        | "pl" : 0.0119,
+        | "interest" : 0,
+        | "accountBalance" : 100000.0119,
+        | "tradeId" : 176403879
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MarginCloseoutTriggered(176403889L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 1.25918, 0.0119, 0, 100000.0119, 176403879L)) ⇒
+    }
+  }
+
+  it must "parse a MarginRateChanged event from valid json" in {
+    val json =
+      """
+        |{
+        | "id" : 175739360,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "SET_MARGIN_RATE",
+        | "rate" : 0.02
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Right(MarginRateChanged(175739360L, 1491998L, 1453326442000000L, 0.02)) ⇒
+    }
+  }
+
   it must "fail to parse something else" in {
     val json =
       """

@@ -190,13 +190,12 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
         | "type": "TRADE_UPDATE",
         | "instrument": "EUR_USD",
         | "units": 2,
-        | "side": "sell",
         | "stopLossPrice": 1.1,
         | "tradeId": 176403879
         |}
       """.stripMargin
     decode[OandaEvent](json) should matchPattern {
-      case Xor.Right(TradeUpdated(176403884L, 6765103L, 1453326442000000L, "EUR_USD", 2, Sell, 176403879L, None, Some(1.1), None)) ⇒
+      case Xor.Right(TradeUpdated(176403884L, 6765103L, 1453326442000000L, "EUR_USD", 2, 176403879L, None, Some(1.1), None)) ⇒
     }
   }
 

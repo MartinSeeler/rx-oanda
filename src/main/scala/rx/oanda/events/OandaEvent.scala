@@ -236,7 +236,6 @@ case class TradeUpdated(
   time: Long,
   instrument: String,
   units: Int,
-  side: Side,
   tradeId: Long,
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],

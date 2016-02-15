@@ -479,6 +479,24 @@ class OandaEventsDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "fail to parse an event with an unknown type field" in {
+    val json =
+      """
+        |{
+        | "id" : 175739369,
+        | "accountId" : 1491998,
+        | "time" : "1453326442000000",
+        | "type" : "FOOBAR",
+        | "amount" : -10.0414,
+        | "accountBalance" : 99999.9992,
+        | "reason" : "FUNDS"
+        |}
+      """.stripMargin
+    decode[OandaEvent](json) should matchPattern {
+      case Xor.Left(e: DecodingFailure) ⇒ //...
+    }
+  }
+
   it must "fail to parse something else" in {
     val json =
       """

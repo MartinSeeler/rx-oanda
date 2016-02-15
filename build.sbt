@@ -24,7 +24,7 @@ libraryDependencies ++= List(
   // circe for decoding
   "io.circe"          %% "circe-core"                        % circeV,
   "io.circe"          %% "circe-generic"                     % circeV,
-  "io.circe"          %% "circe-parse"                       % "0.2.1",
+  "io.circe"          %% "circe-parser"                      % circeV,
   // testing
   "org.scalatest"     %% "scalatest"                         % scalaTestV   % "test",
   "org.scalacheck"    %% "scalacheck"                        % scalaCheckV  % "test"

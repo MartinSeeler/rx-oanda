@@ -18,7 +18,7 @@ package rx.oanda.utils
 
 import cats.data.Xor
 import io.circe.DecodingFailure
-import io.circe.parse._
+import io.circe.parser._
 import org.scalatest._
 
 class SideDecoderSpec extends FlatSpec with Matchers {

@@ -18,7 +18,7 @@ package rx.oanda.rates
 
 import cats.data.Xor
 import io.circe.DecodingFailure
-import io.circe.parse._
+import io.circe.parser._
 import org.scalatest._
 
 class PriceDecoderSpec extends FlatSpec with Matchers {

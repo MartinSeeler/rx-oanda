@@ -18,7 +18,7 @@ package rx.oanda.accounts
 
 import cats.data.Xor
 import io.circe.DecodingFailure
-import io.circe.parse._
+import io.circe.parser._
 import org.scalatest._
 
 class AccountDecoderSpec extends FlatSpec with Matchers {

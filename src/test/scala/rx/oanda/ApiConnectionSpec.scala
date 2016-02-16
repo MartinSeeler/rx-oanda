@@ -17,12 +17,14 @@
 package rx.oanda
 
 import akka.actor.ActorSystem
+import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.HttpEncodings._
 import akka.http.scaladsl.testkit.TestFrameworkInterface.Scalatest
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl._
@@ -52,7 +54,7 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
         "{\"username\":\"keith\",\"password\":\"Rocir~olf4\",\"accountId\":8954947}")))
     case HttpRequest(GET, Uri.Path("/sandboxAccount"), _, _, _) =>
       Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
-        data = Source.single(ByteString.fromString("{\"username\":\"keith\",\"password\":\"Rocir~olf4\",\"accountId\":8954947}")).via(Gzip.encoderFlow))))
+        data = Source.single(ByteString.fromString("{\"username\":\"keith\",\"password\":\"Rocir~olf4\",\"accountId\":8954947}")).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
     case HttpRequest(GET, Uri.Path("/oandaError"), _, _, _) =>
       Future.successful(HttpResponse(status = BadRequest,
         entity = HttpEntity(ContentTypes.`application/json`,

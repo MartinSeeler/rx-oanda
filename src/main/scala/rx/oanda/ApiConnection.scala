@@ -19,6 +19,7 @@ package rx.oanda
 import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.coding.Gzip
+import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.HttpEncodings.gzip
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.scaladsl.{Flow, Source}
@@ -36,11 +37,11 @@ trait ApiConnection {
     Source.single(req → 42L).log("request")
       .via(apiConnection).log("response")
       .flatMapConcat {
-        case (Success(HttpResponse(StatusCodes.OK, headers, entity, _)), _) if headers contains ContentEncoding.create(gzip) ⇒
+        case (Success(HttpResponse(OK, headers, entity, _)), _) if headers contains ContentEncoding.create(gzip) ⇒
           entity.dataBytes.log("gzip-bytes", _.utf8String)
             .via(Gzip.decoderFlow).log("bytes", _.utf8String)
             .via(CirceStreamSupport.decode[R]).log("decode")
-        case (Success(HttpResponse(StatusCodes.OK, _, entity, _)), _) ⇒
+        case (Success(HttpResponse(OK, _, entity, _)), _) ⇒
           entity.dataBytes.log("bytes", _.utf8String)
             .via(CirceStreamSupport.decode[R]).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream

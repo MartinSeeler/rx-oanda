@@ -17,12 +17,14 @@
 package rx.oanda.accounts
 
 import akka.actor.ActorSystem
+import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.HttpEncodings._
 import akka.http.scaladsl.testkit.TestFrameworkInterface.Scalatest
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.testkit.scaladsl.TestSink
@@ -51,12 +53,12 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
       Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
         data = Source.single(
           "{\"accounts\":[{\"accountId\":8954947,\"accountName\":\"Primary\",\"accountCurrency\":\"USD\",\"marginRate\":0.05},{\"accountId\":8954946,\"accountName\":\"Demo\",\"accountCurrency\":\"EUR\",\"marginRate\":0.05}]}"
-        ).map(ByteString.fromString).via(Gzip.encoderFlow))))
+        ).map(ByteString.fromString).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
     case HttpRequest(GET, Uri.Path("/v1/accounts/8954947"), _, _, _) =>
       Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
         data = Source.single(
           "{\"accountId\":8954947,\"accountName\":\"Primary\",\"balance\":100000,\"unrealizedPl\":1.1,\"realizedPl\":-2.2,\"marginUsed\":3.3,\"marginAvail\":100000,\"openTrades\":1,\"openOrders\":2,\"marginRate\":0.05,\"accountCurrency\":\"USD\"}"
-        ).map(ByteString.fromString).via(Gzip.encoderFlow))))
+        ).map(ByteString.fromString).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
   }
 
   val bindingFuture: Future[Http.ServerBinding] =

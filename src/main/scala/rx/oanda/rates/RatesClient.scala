@@ -82,12 +82,12 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
     makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).log("instruments").mapConcat(identity).log("instrument")
 
-  def latestCandles(instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk): Source[candleType.R, Unit] = {
+  def latestCandles[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, Unit] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "count" → count.toString))), headers = env.headers)
     makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-count").mapConcat(identity).log("candle")
   }
 
-  def historicalCandles(instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleType = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[candleType.R, Unit] = {
+  def historicalCandles[R](instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[R, Unit] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "start" → startTime.toString, "end" → endTime.toString, "includeFirst" → includeFirst.toString))), headers = env.headers)
     makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-date").mapConcat(identity).log("candle")
   }

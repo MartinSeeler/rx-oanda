@@ -107,6 +107,6 @@ class PositionClientSpec extends FlatSpec with PropertyChecks with Matchers with
     }
   }
 
-  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.shutdown())
+  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.terminate())
 
 }

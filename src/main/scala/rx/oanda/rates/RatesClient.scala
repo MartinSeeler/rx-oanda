@@ -16,13 +16,13 @@
 
 package rx.oanda.rates
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
-import akka.stream.io.Framing
 import akka.stream.scaladsl.{Flow, Source}
 import akka.util.ByteString
 import cats.data.Xor
@@ -63,13 +63,13 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
     HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
   }
 
-  def livePricesStream(accountID: Long, instruments: Seq[String], sessionId: String = "undefined"): Source[Xor[Price, Heartbeat], Unit] =
+  def livePricesStream(accountID: Long, instruments: Seq[String], sessionId: String = "undefined"): Source[Xor[Price, Heartbeat], NotUsed] =
     startStreaming[Price](pricesStreamRequest(accountID, instruments), "tick").log("price")
 
-  def latestPrices(instruments: Seq[String]): Source[Price, Unit] =
+  def latestPrices(instruments: Seq[String]): Source[Price, NotUsed] =
     makeRequest[Vector[Price]](pricesReq(instruments)).log("prices").mapConcat(identity).log("price")
 
-  def historicalPrices(instruments: Seq[String], after: Long): Source[Price, Unit] =
+  def historicalPrices(instruments: Seq[String], after: Long): Source[Price, NotUsed] =
     makeRequest[Vector[Price]](pricesSinceReq(instruments, after)).log("prices-since").mapConcat(identity).log("price")
 
   /**
@@ -79,15 +79,15 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
     * @param instruments A list of instruments that are to be returned. If the instruments list is empty, all instruments will be returned.
     * @return A Source to retrieve infos about all or the specified instruments.
     */
-  def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, Unit] =
+  def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, NotUsed] =
     makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).log("instruments").mapConcat(identity).log("instrument")
 
-  def latestCandles[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, Unit] = {
+  def latestCandles[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, NotUsed] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "count" → count.toString))), headers = env.headers)
     makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-count").mapConcat(identity).log("candle")
   }
 
-  def historicalCandles[R](instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[R, Unit] = {
+  def historicalCandles[R](instrument: String, startTime: Long, endTime: Long, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk, includeFirst: Boolean = true): Source[R, NotUsed] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "start" → startTime.toString, "end" → endTime.toString, "includeFirst" → includeFirst.toString))), headers = env.headers)
     makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-date").mapConcat(identity).log("candle")
   }

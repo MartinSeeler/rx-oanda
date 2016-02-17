@@ -112,6 +112,6 @@ class AccountClientRequestsSpec extends FlatSpec with PropertyChecks with Matche
     "tradeClient.createAccountRequest" shouldNot typeCheck
   }
 
-  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.shutdown())
+  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.terminate())
 
 }

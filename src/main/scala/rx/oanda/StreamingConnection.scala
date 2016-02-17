@@ -16,6 +16,7 @@
 
 package rx.oanda
 
+import akka.NotUsed
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.scaladsl.{Flow, Source}
@@ -31,7 +32,7 @@ trait StreamingConnection {
 
   private[oanda] val streamingConnection: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool]
 
-  private[oanda] def startStreaming[R](req: HttpRequest, key: String)(implicit ev: Decoder[R]): Source[Xor[R, Heartbeat], Unit] =
+  private[oanda] def startStreaming[R](req: HttpRequest, key: String)(implicit ev: Decoder[R]): Source[Xor[R, Heartbeat], NotUsed] =
     Source.single(req → 42L).log("request")
       .via(streamingConnection).log("response")
       .flatMapConcat {

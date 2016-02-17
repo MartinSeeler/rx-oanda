@@ -96,6 +96,6 @@ class StreamingConnectionSpec extends FlatSpec with Matchers with Scalatest {
 
   def cleanUp(): Unit = bindingFuture
     .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
-    .onComplete(_ ⇒ system.shutdown())
+    .onComplete(_ ⇒ system.terminate())
 
 }

@@ -16,6 +16,7 @@
 
 package rx.oanda.accounts
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.HttpMethods._
@@ -42,19 +43,19 @@ class AccountClient[A <: OandaEnvironment.Auth](env: OandaEnvironment[A])(implic
     HttpRequest(POST, Uri(s"/v1/accounts"), headers = env.headers)
 
   /** Get account information. */
-  def account(accountId: Long): Source[Account, Unit] =
+  def account(accountId: Long): Source[Account, NotUsed] =
     makeRequest[Account](accountRequest(accountId))
 
   /** Get a list of accounts owned by the user. */
-  def accounts(implicit ev: MustHaveAuth[A]): Source[ShortAccount, Unit] =
+  def accounts(implicit ev: MustHaveAuth[A]): Source[ShortAccount, NotUsed] =
     makeRequest[Vector[ShortAccount]](accountsRequest).mapConcat(identity)
 
   /** Get a list of accounts owned by the sandbox user. */
-  def accounts(username: String)(implicit ev: MustNotHaveAuth[A]): Source[ShortAccount, Unit] =
+  def accounts(username: String)(implicit ev: MustNotHaveAuth[A]): Source[ShortAccount, NotUsed] =
     makeRequest[Vector[ShortAccount]](accountsRequest(username)).mapConcat(identity)
 
   /** Create a new account. */
-  def createAccount(currency: Option[String] = None)(implicit ev: MustNotHaveAuth[A]): Source[SandboxAccount, Unit] =
+  def createAccount(currency: Option[String] = None)(implicit ev: MustNotHaveAuth[A]): Source[SandboxAccount, NotUsed] =
     Source.empty // TODO: implement me when Sandbox API is back
 
 }

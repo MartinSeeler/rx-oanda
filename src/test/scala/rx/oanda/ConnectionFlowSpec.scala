@@ -36,44 +36,44 @@ class ConnectionFlowSpec extends FlatSpec with Matchers with Scalatest {
     val streamFlow = OandaEnvironment.SandboxEnvironment.apiFlow[Long]
     val pool = Source.empty.viaMat(streamFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("api-sandbox.oanda.com")
-    pool.setup.setup.httpsContext shouldBe empty
+    pool.setup.port shouldBe 80
   }
 
   it must "provide the correct stream connection for the sandbox environment" in {
     val apiFlow = OandaEnvironment.SandboxEnvironment.streamFlow[Long]
     val pool = Source.empty.viaMat(apiFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("stream-sandbox.oanda.com")
-    pool.setup.setup.httpsContext shouldBe empty
+    pool.setup.port shouldBe 80
   }
 
   it must "provide the correct api connection for the trade practice environment" in {
     val apiFlow = OandaEnvironment.TradePracticeEnvironment("token").apiFlow[Long]
     val pool = Source.empty.viaMat(apiFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("api-fxpractice.oanda.com")
-    pool.setup.setup.httpsContext shouldBe defined
+    pool.setup.port shouldBe 443
   }
 
   it must "provide the correct stream connection for the trade practice environment" in {
     val streamFlow = OandaEnvironment.TradePracticeEnvironment("token").streamFlow[Long]
     val pool = Source.empty.viaMat(streamFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("stream-fxpractice.oanda.com")
-    pool.setup.setup.httpsContext shouldBe defined
+    pool.setup.port shouldBe 443
   }
 
   it must "provide the correct api connection for the trade environment" in {
     val apiFlow = OandaEnvironment.TradeEnvironment("token").apiFlow[Long]
     val pool = Source.empty.viaMat(apiFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("api-fxtrade.oanda.com")
-    pool.setup.setup.httpsContext shouldBe defined
+    pool.setup.port shouldBe 443
   }
 
   it must "provide the correct stream connection for the trade environment" in {
     val streamFlow = OandaEnvironment.TradeEnvironment("token").streamFlow[Long]
     val pool = Source.empty.viaMat(streamFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
     pool.setup.host should be ("stream-fxtrade.oanda.com")
-    pool.setup.setup.httpsContext shouldBe defined
+    pool.setup.port shouldBe 443
   }
 
-  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.shutdown())
+  def cleanUp(): Unit = Http().shutdownAllConnectionPools().onComplete(_ ⇒ sys.terminate())
 
 }

@@ -5,8 +5,8 @@ import sbtrelease.ReleaseStateTransformations._
 name := "rx-oanda"
 scalaVersion := "2.11.7"
 
-val akkaStreamV = "2.0.3"
-val akkaHttpV = "2.0.3"
+val akkaStreamV = "2.4.2"
+val akkaHttpV = "2.4.2"
 val circeV = "0.3.0"
 val scalaTestV = "2.2.6"
 val scalaCheckV = "1.12.5"
@@ -14,13 +14,15 @@ val scalaCheckV = "1.12.5"
 resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
+resolvers += Resolver.bintrayRepo("knutwalker", "maven")
+
 libraryDependencies ++= List(
   // Akka Streams and Akka Http
-  "com.typesafe.akka" %% "akka-stream-experimental"          % akkaStreamV,
-  "com.typesafe.akka" %% "akka-stream-testkit-experimental"  % akkaStreamV  % "test",
+  "com.typesafe.akka" %% "akka-stream"                       % akkaStreamV,
+  "com.typesafe.akka" %% "akka-stream-testkit"               % akkaStreamV  % "test",
   "com.typesafe.akka" %% "akka-http-experimental"            % akkaHttpV,
-  "com.typesafe.akka" %% "akka-http-testkit-experimental"    % akkaHttpV    % "test",
-  "de.knutwalker"     %% "akka-stream-circe"                 % "2.0.0",
+  "com.typesafe.akka" %% "akka-http-testkit"    % akkaHttpV    % "test",
+  "de.knutwalker"     %% "akka-stream-circe"                 % "3.0.0-c74a41ef0970b7695348cc157ae332b9ee86e237",
   // circe for decoding
   "io.circe"          %% "circe-core"                        % circeV,
   "io.circe"          %% "circe-generic"                     % circeV,

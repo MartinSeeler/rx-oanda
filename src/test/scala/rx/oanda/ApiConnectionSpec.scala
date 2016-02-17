@@ -19,7 +19,6 @@ package rx.oanda
 import akka.actor.ActorSystem
 import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
@@ -103,6 +102,6 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
 
   def cleanUp(): Unit = bindingFuture
     .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
-    .onComplete(_ ⇒ system.shutdown())
+    .onComplete(_ ⇒ system.terminate())
 
 }

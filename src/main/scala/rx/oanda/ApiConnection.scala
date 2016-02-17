@@ -16,10 +16,11 @@
 
 package rx.oanda
 
+import akka.NotUsed
 import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.StatusCodes.OK
+import akka.http.scaladsl.coding._
 import akka.http.scaladsl.model.headers.HttpEncodings.gzip
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.stream.scaladsl.{Flow, Source}
@@ -33,7 +34,7 @@ trait ApiConnection {
 
   private[oanda] val apiConnection: Flow[(HttpRequest, Long), (Try[HttpResponse], Long), HostConnectionPool]
 
-  private[oanda] def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, Unit] =
+  private[oanda] def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, NotUsed] =
     Source.single(req → 42L).log("request")
       .via(apiConnection).log("response")
       .flatMapConcat {

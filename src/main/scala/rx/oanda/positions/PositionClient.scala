@@ -16,6 +16,7 @@
 
 package rx.oanda.positions
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{HttpRequest, Uri}
@@ -38,13 +39,13 @@ class PositionClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSys
   private[oanda] def closePositionRequest(accountId: Long, instrument: String): HttpRequest =
     HttpRequest(DELETE, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
 
-  def positions(accountId: Long): Source[Position, Unit] =
+  def positions(accountId: Long): Source[Position, NotUsed] =
     makeRequest[Vector[Position]](positionsRequest(accountId)).mapConcat(identity)
 
-  def position(accountId: Long, instrument: String): Source[Position, Unit] =
+  def position(accountId: Long, instrument: String): Source[Position, NotUsed] =
     makeRequest[Position](positionRequest(accountId, instrument))
 
-  def closePosition(accountId: Long, instrument: String): Source[ClosedPosition, Unit] =
+  def closePosition(accountId: Long, instrument: String): Source[ClosedPosition, NotUsed] =
     makeRequest[ClosedPosition](closePositionRequest(accountId, instrument))
 
 }

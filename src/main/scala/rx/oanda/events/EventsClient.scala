@@ -16,6 +16,7 @@
 
 package rx.oanda.events
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{Uri, HttpRequest}
@@ -35,7 +36,7 @@ class EventsClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSyste
     HttpRequest(GET, Uri(s"/v1/events").withRawQueryString(accountsQuery(accounts)), headers = env.headers)
   }
 
-  def liveEventsStream(accounts: Seq[Long]): Source[Xor[OandaEvent, Heartbeat], Unit] =
+  def liveEventsStream(accounts: Seq[Long]): Source[Xor[OandaEvent, Heartbeat], NotUsed] =
     startStreaming[OandaEvent](eventsStreamReq(accounts), "transaction").log("events")
 
 }

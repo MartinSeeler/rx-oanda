@@ -102,6 +102,6 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
 
   def cleanUp(): Unit = bindingFuture
     .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
-    .onComplete(_ ⇒ system.shutdown())
+    .onComplete(_ ⇒ system.terminate())
 
 }

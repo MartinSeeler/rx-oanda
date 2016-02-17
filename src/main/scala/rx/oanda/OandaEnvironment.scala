@@ -61,7 +61,7 @@ object OandaEnvironment {
 
     implicit val AuthConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
       def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPoolTls[T](host = endpoint).log("connection")
+        Http().cachedHostConnectionPoolHttps[T](host = endpoint).log("connection")
     }
 
     implicit val NoAuthConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {

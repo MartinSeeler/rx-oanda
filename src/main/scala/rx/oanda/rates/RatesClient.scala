@@ -18,25 +18,19 @@ package rx.oanda.rates
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Source}
-import akka.util.ByteString
+import akka.stream.scaladsl.Source
 import cats.data.Xor
-import de.knutwalker.akka.stream.support.CirceStreamSupport
-import io.circe.Decoder
-import rx.oanda.OandaEnvironment.{ConnectionPool, Auth}
-import rx.oanda.errors.OandaError._
-import rx.oanda.rates.candles.{CandleTypes, CandleType, CandleGranularity, CandleGranularities}
-import CandleGranularities.S5
+import rx.oanda.OandaEnvironment.{Auth, ConnectionPool}
 import rx.oanda.rates.RatesClient._
+import rx.oanda.rates.candles.CandleGranularities.S5
+import rx.oanda.rates.candles.{CandleGranularity, CandleTypes}
 import rx.oanda.utils.Heartbeat
-import rx.oanda.{StreamingConnection, ApiConnection, OandaEnvironment}
-
-import scala.util._
+import rx.oanda.utils.QueryHelper._
+import rx.oanda.{ApiConnection, OandaEnvironment, StreamingConnection}
 
 class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
   extends ApiConnection with StreamingConnection {
@@ -44,33 +38,23 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   private[oanda] val streamingConnection = env.streamFlow[Long]
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  private[oanda] def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: String = "undefined"): HttpRequest = {
-    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), s"sessionId=$sessionId").filter(_.nonEmpty).mkString("&")
-    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQuery), headers = env.headers)
-  }
+  private[oanda] def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: String = "undefined"): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(accountIdParam(accountId) :: optionalInstrumentsParam(instruments) :: optionalSessionIdParam(Some(sessionId)) :: Nil)), headers = env.headers)
 
-  private[oanda] def pricesReq(instruments: Seq[String]): HttpRequest = {
-    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(instrumentsQuery(instruments)), headers = env.headers)
-  }
+  private[oanda] def pricesReq(instruments: Seq[String], since: Option[Long]): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(optionalInstrumentsParam(instruments) :: optionalSinceParam(since) :: Nil)), headers = env.headers)
 
-  private[oanda] def pricesSinceReq(instruments: Seq[String], since: Long): HttpRequest = {
-    val rawQuery = Seq(instrumentsQuery(instruments), s"since=$since").filter(_.nonEmpty).mkString("&")
-    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQuery), headers = env.headers)
-  }
+  private[oanda] def instrumentsRequest(accountId: Long, instruments: Seq[String] = Nil): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQueryStringOf(accountIdParam(accountId) :: optionalInstrumentsParam(instruments) :: fieldsQuery :: Nil)), headers = env.headers)
 
-  private[oanda] def instrumentsRequest(accountId: Long, instruments: Seq[String] = Nil): HttpRequest = {
-    val rawQuery = Seq(accountIdQuery(accountId), instrumentsQuery(instruments), fieldsQuery).filter(_.nonEmpty).mkString("&")
-    HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQuery), headers = env.headers)
-  }
-
-  def livePricesStream(accountID: Long, instruments: Seq[String], sessionId: String = "undefined"): Source[Xor[Price, Heartbeat], NotUsed] =
+  def livePrices(accountID: Long, instruments: Seq[String], sessionId: String = "undefined"): Source[Xor[Price, Heartbeat], NotUsed] =
     startStreaming[Price](pricesStreamRequest(accountID, instruments), "tick").log("price")
 
-  def latestPrices(instruments: Seq[String]): Source[Price, NotUsed] =
-    makeRequest[Vector[Price]](pricesReq(instruments)).log("prices").mapConcat(identity).log("price")
+  def prices(instruments: Seq[String]): Source[Price, NotUsed] =
+    makeRequest[Vector[Price]](pricesReq(instruments, None)).log("prices").mapConcat(identity).log("price")
 
-  def historicalPrices(instruments: Seq[String], after: Long): Source[Price, NotUsed] =
-    makeRequest[Vector[Price]](pricesSinceReq(instruments, after)).log("prices-since").mapConcat(identity).log("price")
+  def pricesSince(instruments: Seq[String], since: Long): Source[Price, NotUsed] =
+    makeRequest[Vector[Price]](pricesReq(instruments, Some(since))).log("prices").mapConcat(identity).log("price")
 
   /**
     * Get a list of tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.
@@ -82,7 +66,7 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
   def instruments(accountId: Long, instruments: Seq[String] = Nil): Source[Instrument, NotUsed] =
     makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments)).log("instruments").mapConcat(identity).log("instrument")
 
-  def latestCandles[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, NotUsed] = {
+  def candles[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, NotUsed] = {
     val req = HttpRequest(GET, Uri("/v1/candles").withQuery(Query(Map("instrument" → instrument, "candleFormat" → candleType.uriParam, "granularity" → granularity.toString, "count" → count.toString))), headers = env.headers)
     makeRequest[Vector[candleType.R]](req)(candleType.decoder).log("instrument-history-count").mapConcat(identity).log("candle")
   }
@@ -109,11 +93,5 @@ object RatesClient {
   )
 
   private val fieldsQuery = s"fields=${instrumentFields.mkString("%2C")}"
-
-  private def instrumentsQuery(instruments: Seq[String]): String =
-    if (instruments.isEmpty) "" else s"instruments=${instruments.mkString("%2C")}"
-
-  private def accountIdQuery(accountId: Long): String =
-    s"accountId=$accountId"
 
 }

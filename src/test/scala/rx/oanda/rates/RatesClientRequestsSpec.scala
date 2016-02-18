@@ -56,9 +56,20 @@ class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers
       tradeReq.uri.path.toString should be("/v1/instruments")
 
       // match querystring
-      sandboxReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
-      practiceReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
-      tradeReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
+      val sandboxQuery = sandboxReq.uri.query()
+      sandboxQuery.toMap should have size 2
+      sandboxQuery.get("accountId") shouldBe Some(accountId.toString)
+      sandboxQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
+
+      val practiceQuery = practiceReq.uri.query()
+      practiceQuery.toMap should have size 2
+      practiceQuery.get("accountId") shouldBe Some(accountId.toString)
+      practiceQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
+
+      val tradeQuery = tradeReq.uri.query()
+      tradeQuery.toMap should have size 2
+      tradeQuery.get("accountId") shouldBe Some(accountId.toString)
+      tradeQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
 
       // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
@@ -84,9 +95,23 @@ class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers
       tradeReq.uri.path.toString should be("/v1/instruments")
 
       // match querystring
-      sandboxReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
-      practiceReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
-      tradeReq.uri.rawQueryString shouldBe Some(s"accountId=$accountId&instruments=EUR_USD%2CEUR_GBP&fields=displayName%2Chalted%2CinterestRate%2CmarginRate%2CmaxTradeUnits%2CmaxTrailingStop%2CminTrailingStop%2Cpip%2Cprecision")
+      val sandboxQuery = sandboxReq.uri.query()
+      sandboxQuery.toMap should have size 3
+      sandboxQuery.get("accountId") shouldBe Some(accountId.toString)
+      sandboxQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
+      sandboxQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+
+      val practiceQuery = practiceReq.uri.query()
+      practiceQuery.toMap should have size 3
+      practiceQuery.get("accountId") shouldBe Some(accountId.toString)
+      practiceQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
+      practiceQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+
+      val tradeQuery = tradeReq.uri.query()
+      tradeQuery.toMap should have size 3
+      tradeQuery.get("accountId") shouldBe Some(accountId.toString)
+      tradeQuery.get("fields") shouldBe Some("displayName,halted,interestRate,marginRate,maxTradeUnits,maxTrailingStop,minTrailingStop,pip,precision")
+      tradeQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
 
       // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
@@ -96,9 +121,9 @@ class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers
   }
 
   it must "build the correct request to get prices for specific instruments" in {
-      val sandboxReq = sandboxClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
-      val practiceReq = practiceClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
-      val tradeReq = tradeClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil)
+      val sandboxReq = sandboxClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil, None)
+      val practiceReq = practiceClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil, None)
+      val tradeReq = tradeClient.pricesReq("EUR_USD" :: "EUR_GBP" :: Nil, None)
 
       // match method
       sandboxReq.method should be(HttpMethods.GET)
@@ -111,9 +136,17 @@ class RatesClientRequestsSpec extends FlatSpec with PropertyChecks with Matchers
       tradeReq.uri.path.toString should be("/v1/prices")
 
       // match querystring
-      sandboxReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
-      practiceReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
-      tradeReq.uri.rawQueryString shouldBe Some("instruments=EUR_USD%2CEUR_GBP")
+      val sandboxQuery = sandboxReq.uri.query()
+      sandboxQuery.toMap should have size 1
+      sandboxQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+
+      val practiceQuery = practiceReq.uri.query()
+      practiceQuery.toMap should have size 1
+      practiceQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
+
+      val tradeQuery = tradeReq.uri.query()
+      tradeQuery.toMap should have size 1
+      tradeQuery.get("instruments") shouldBe Some("EUR_USD,EUR_GBP")
 
       // match headers
       sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))

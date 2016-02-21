@@ -40,9 +40,16 @@ trait FakeAccountEndpoints extends FlatSpec with BeforeAndAfterAll {
   val route =
     path("v1" / "accounts") {
       encodeResponseWith(Gzip) {
-        complete {
-          HttpEntity("{\"accounts\":[{\"accountId\":8954947,\"accountName\":\"Primary\",\"accountCurrency\":\"USD\",\"marginRate\":0.05},{\"accountId\":8954946,\"accountName\":\"Demo\",\"accountCurrency\":\"EUR\",\"marginRate\":0.05}]}").withContentType(ContentTypes.`application/json`)
-        }
+        get {
+          complete {
+            HttpEntity("{\"accounts\":[{\"accountId\":8954947,\"accountName\":\"Primary\",\"accountCurrency\":\"USD\",\"marginRate\":0.05},{\"accountId\":8954946,\"accountName\":\"Demo\",\"accountCurrency\":\"EUR\",\"marginRate\":0.05}]}").withContentType(ContentTypes.`application/json`)
+          }
+        } ~
+          post {
+            complete {
+              HttpEntity("""{"username":"keith","password":"Rocir~olf4","accountId":8954947}""").withContentType(ContentTypes.`application/json`)
+            }
+          }
       }
     } ~
     path("v1" / "accounts" / LongNumber) { accountId ⇒
@@ -52,7 +59,6 @@ trait FakeAccountEndpoints extends FlatSpec with BeforeAndAfterAll {
         }
       }
     }
-
 
   var bindingFuture: Future[ServerBinding] = _
 

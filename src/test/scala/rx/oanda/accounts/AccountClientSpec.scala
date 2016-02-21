@@ -51,4 +51,11 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
       .expectComplete()
   }
 
+  it must "create a sandbox account without authentication" in {
+    noAuthClient.createTestAccount()
+      .runWith(TestSink.probe[SandboxAccount])
+      .requestNext(SandboxAccount("keith", "Rocir~olf4", 8954947L))
+      .expectComplete()
+  }
+
 }

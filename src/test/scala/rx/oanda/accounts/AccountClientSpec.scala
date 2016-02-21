@@ -16,69 +16,20 @@
 
 package rx.oanda.accounts
 
-import akka.actor.ActorSystem
-import akka.http.javadsl.model.headers.ContentEncoding
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.coding.Gzip
-import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.HttpEncodings._
-import akka.http.scaladsl.testkit.TestFrameworkInterface.Scalatest
-import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.testkit.scaladsl.TestSink
-import akka.stream.{ActorMaterializer, Materializer}
-import akka.util.ByteString
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
-import rx.oanda.OandaEnvironment._
 
-import scala.concurrent.Future
-import scala.util.Try
+class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with FakeAccountEndpoints {
 
-class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with Scalatest {
-
-  behavior of "The Account Client"
-
-  implicit val system = ActorSystem()
-  implicit val mat = ActorMaterializer()
-  import system.dispatcher
-
-  val serverSource = Http().bind("localhost", 8082)
-
-  val requestHandler: HttpRequest => Future[HttpResponse] = {
-    case HttpRequest(GET, Uri.Path("/v1/accounts"), _, _, _) =>
-      Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
-        data = Source.single(
-          "{\"accounts\":[{\"accountId\":8954947,\"accountName\":\"Primary\",\"accountCurrency\":\"USD\",\"marginRate\":0.05},{\"accountId\":8954946,\"accountName\":\"Demo\",\"accountCurrency\":\"EUR\",\"marginRate\":0.05}]}"
-        ).map(ByteString.fromString).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
-    case HttpRequest(GET, Uri.Path("/v1/accounts/8954947"), _, _, _) =>
-      Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
-        data = Source.single(
-          "{\"accountId\":8954947,\"accountName\":\"Primary\",\"balance\":100000,\"unrealizedPl\":1.1,\"realizedPl\":-2.2,\"marginUsed\":3.3,\"marginAvail\":100000,\"openTrades\":1,\"openOrders\":2,\"marginRate\":0.05,\"accountCurrency\":\"USD\"}"
-        ).map(ByteString.fromString).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
-  }
-
-  val bindingFuture: Future[Http.ServerBinding] =
-    serverSource.to(Sink.foreach(_ handleWithAsyncHandler requestHandler)).run()
-
-  implicit val WithAuthTestConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
-    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-      Http().cachedHostConnectionPool[T]("localhost", 8082).log("connection")
-  }
-
-  implicit val NoAuthTestConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
-    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-      Http().cachedHostConnectionPool[T]("localhost", 8082).log("connection")
-  }
+  behavior of "The AccountClient"
 
   val noAuthClient = new AccountClient(OandaEnvironment.SandboxEnvironment)
   val authClient = new AccountClient(OandaEnvironment.TradePracticeEnvironment("token"))
 
   it must "retrieve all accounts with authentication" in {
-    authClient.accounts
+    authClient.allAccounts
       .runWith(TestSink.probe[ShortAccount])
       .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
       .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
@@ -86,7 +37,7 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
   }
 
   it must "retrieve all accounts without authentication" in {
-    noAuthClient.accounts("foobar")
+    noAuthClient.allAccounts("foobar")
       .runWith(TestSink.probe[ShortAccount])
       .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
       .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
@@ -94,14 +45,10 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
   }
 
   it must "retrieve a specific account with and without authentication" in {
-    authClient.account(8954947L)
+    authClient.accountById(8954947L)
       .runWith(TestSink.probe[Account])
       .requestNext(Account(8954947L, "Primary", 100000, 1.1, -2.2, 3.3, 100000, 1, 2, 0.05, "USD"))
       .expectComplete()
   }
-
-  def cleanUp(): Unit = bindingFuture
-    .flatMap(_ ⇒ Http().shutdownAllConnectionPools())
-    .onComplete(_ ⇒ system.terminate())
 
 }

@@ -43,6 +43,16 @@ object QueryHelper {
     case None ⇒ ""
   }
 
+  def optionalUsernameParam(usernameO: Option[String]): String = usernameO match {
+    case Some(username) ⇒ s"username=$username"
+    case None ⇒ ""
+  }
+
+  def optionalCurrency(currencyO: Option[String]): String = currencyO match {
+    case Some(currency) ⇒ s"currency=$currency"
+    case None ⇒ ""
+  }
+
   def optionalSinceParam(sinceO: Option[Long]): String = sinceO match {
     case Some(since) ⇒ s"since=$since"
     case None ⇒ ""

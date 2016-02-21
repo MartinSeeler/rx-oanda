@@ -35,6 +35,7 @@ case class Account(
 
 object Account {
 
-  implicit val decodeAccount: Decoder[Account] = deriveDecoder
+  implicit val decodeAccount: Decoder[Account] =
+    deriveDecoder
 
 }

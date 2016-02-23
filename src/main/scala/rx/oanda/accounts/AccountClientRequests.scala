@@ -30,7 +30,7 @@ private[accounts] object AccountClientRequests {
     * @return The request to use without headers.
     */
   def accountListRequest(username: Option[String]): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalUsernameParam(username) :: Nil)))
+    HttpRequest(GET, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalParam("username", username) :: Nil)))
 
   /**
     * Builds the request to create a new account. This call is only available on the sandbox system.
@@ -39,7 +39,7 @@ private[accounts] object AccountClientRequests {
     * @return The request to use without headers.
     */
   def createTestAccountRequest(currency: Option[String]): HttpRequest =
-    HttpRequest(POST, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalCurrency(currency) :: Nil)))
+    HttpRequest(POST, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalParam("currency", currency) :: Nil)))
   
   /**
     * Builds the request to get informations about an account.

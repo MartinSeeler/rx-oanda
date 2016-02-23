@@ -33,7 +33,8 @@ case class Instrument(
 
 object Instrument {
 
-  implicit val decodeInstrument: Decoder[Instrument] = deriveDecoder
+  implicit val decodeInstrument: Decoder[Instrument] =
+    deriveDecoder
 
   implicit val decodeInstruments =
     Decoder.instance(_.get[Vector[Instrument]]("instruments"))

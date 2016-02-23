@@ -18,49 +18,17 @@ package rx.oanda.utils
 
 object QueryHelper {
 
-  def optionalInstrumentsParam(instruments: Seq[String]): String = instruments match {
+  def param[A](key: String, value: A): String = s"$key=$value"
+
+  def optionalParam[A](key: String, value: Option[A]): String = value match {
+    case Some(x) ⇒ s"$key=$x"
+    case None ⇒ ""
+  }
+
+  def listParam[A](key: String, value: Seq[A]): String = value match {
     case Nil ⇒ ""
-    case _ ⇒ s"instruments=${instruments.mkString("%2C")}"
+    case _ ⇒ s"$key=${value.mkString("%2C")}"
   }
-
-  def optionalInstrumentParam(instrumentO: Option[String]): String = instrumentO match {
-    case Some(instrument) ⇒ s"instrument=$instrument"
-    case None ⇒ ""
-  }
-
-  def optionalIdsParam(ids: Seq[Long]): String = ids match {
-    case Nil ⇒ ""
-    case _ ⇒ s"ids=${ids.mkString("%2C")}"
-  }
-
-  def optionalMaxIdParam(maxIdO: Option[Long]): String = maxIdO match {
-    case Some(id) ⇒ s"maxId=$id"
-    case None ⇒ ""
-  }
-
-  def optionalSessionIdParam(sessionIdO: Option[String]): String = sessionIdO match {
-    case Some(id) ⇒ s"sessionId=$id"
-    case None ⇒ ""
-  }
-
-  def optionalUsernameParam(usernameO: Option[String]): String = usernameO match {
-    case Some(username) ⇒ s"username=$username"
-    case None ⇒ ""
-  }
-
-  def optionalCurrency(currencyO: Option[String]): String = currencyO match {
-    case Some(currency) ⇒ s"currency=$currency"
-    case None ⇒ ""
-  }
-
-  def optionalSinceParam(sinceO: Option[Long]): String = sinceO match {
-    case Some(since) ⇒ s"since=$since"
-    case None ⇒ ""
-  }
-
-  def accountIdParam(accountId: Long): String = s"accountId=$accountId"
-
-  def countParam(count: Int): String = s"count=$count"
 
   def rawQueryStringOf(params: Seq[String]): String = params.filter(_.nonEmpty).mkString("&")
 

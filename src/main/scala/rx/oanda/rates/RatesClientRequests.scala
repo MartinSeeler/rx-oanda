@@ -1,0 +1,96 @@
+/*
+ * Copyright 2015 – 2016 Martin Seeler
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package rx.oanda.rates
+
+import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.{Uri, HttpRequest}
+import rx.oanda.rates.candles.{CandleTypes, CandleGranularity}
+import rx.oanda.utils.QueryHelper._
+
+private[rates] object RatesClientRequests {
+
+  /**
+    * Builds the rquest to get a list of tradeable instruments (currency pairs, CFDs, and commodities)
+    * that are available for trading with the account specified.
+    *
+    * @param accountId   The account id to fetch the list of tradeable instruments for.
+    * @param instruments A list of instrument codes that are to be returned in the response.
+    *                    If the list is empty, all instruments will be returned.
+    * @return The request to use without headers.
+    */
+  def instrumentsRequest(accountId: Long, instruments: Seq[String]): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQueryStringOf(param("accountId", accountId) :: listParam("instruments", instruments) :: fieldsQuery :: Nil)))
+
+  /**
+    * Builds the request to fetch live prices for specified instruments.
+    *
+    * @param instruments A list of instruments to fetch prices for.
+    *                    Values should be one of the available instrument from `instruments`.
+    * @param since       Optional when specified, only prices that occurred after the specified timestamp are returned.
+    *                    The value specified must be in a valid datetime format.
+    * @return The request to use without headers.
+    */
+  def pricesRequest(instruments: Seq[String], since: Option[Long]): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(listParam("instruments", instruments) :: param("since", since) :: Nil)))
+
+  /**
+    * Builds the request to get historical information for an instrument.
+    *
+    * @param instrument   Name of the instrument to retrieve history for.
+    *                     The value should be one of the available instrument from `instruments`.
+    * @param count        Optional the number of candlesticks to retrieve. If not specified, count will default to 500.
+    *                     The maximum acceptable value for count is 5000.
+    * @param startTime    Optional the start timestamp for the range of candles requested.
+    *                     The value specified must be in a valid datetime format.
+    * @param endTime      Optional the end timestamp for the range of candles requested.
+    *                     The value specified must be in a valid datetime format.
+    * @param includeFirst An optional boolean field which may be set to “true” or “false”.
+    *                     If it is set to “true”, the candlestick covered by the start timestamp will be returned.
+    *                     If it is set to “false”, this candlestick will not be returned.
+    *                     This field exists so clients may easily ensure that they can poll for all candles more recent
+    *                     than their last received candle.
+    * @param granularity  The time range represented by each candlestick.
+    * @param candleType   Determines the candlestick representation type.
+    *                     This can by either `CandleTypes.BidAsk` or `CandleTypes.Midpoint`.
+    * @return The request to use without headers.
+    */
+  def candlesRequest[R](instrument: String, count: Option[Int], startTime: Option[Long], endTime: Option[Long], includeFirst: Option[Boolean], granularity: CandleGranularity, candleType: CandleTypes.Aux[R]): HttpRequest =
+    HttpRequest(GET, Uri("/v1/candles").withRawQueryString(rawQueryStringOf(
+      param("instrument", instrument) :: param("count", count) ::
+        optionalParam("startTime", startTime) :: optionalParam("endTime", endTime) ::
+        param("granularity", granularity.toString) :: param("candleFormat", candleType.uriParam) ::
+        optionalParam("includeFirst", includeFirst) :: Nil
+    )))
+
+  def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: Option[String]): HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(param("accountId", accountId) :: listParam("instruments", instruments) :: optionalParam("sessionId", sessionId) :: Nil)))
+
+  val instrumentFields = Seq(
+    "displayName",
+    "halted",
+    "interestRate",
+    "marginRate",
+    "maxTradeUnits",
+    "maxTrailingStop",
+    "minTrailingStop",
+    "pip",
+    "precision"
+  )
+
+  val fieldsQuery = s"fields=${instrumentFields.mkString("%2C")}"
+
+}

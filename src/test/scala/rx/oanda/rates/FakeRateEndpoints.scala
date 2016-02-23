@@ -74,6 +74,31 @@ trait FakeRateEndpoints extends FlatSpec with BeforeAndAfterAll {
         }
       }
     } ~
+    path("v1" / "candles") {
+      encodeResponseWith(Gzip) {
+        get {
+          parameterMap { params ⇒
+            (params.get("count"), params.get("start"), params.get("end")) match {
+              case (Some(_), None, None) ⇒ complete {
+                params.get("candleFormat") match {
+                  case Some("bidask") ⇒ HttpEntity("""{"candles":[{"time":"1455488785000000","openBid":1.1001,"openAsk":1.1005,"highBid":1.202,"highAsk":1.204,"lowBid":1.0001,"lowAsk":1.0005,"closeBid":1.1101,"closeAsk":1.1105,"volume":1337,"complete":true}]}""").withContentType(ContentTypes.`application/json`)
+                  case Some("midpoint") ⇒ HttpEntity("""{"candles":[{"time":"1455488785000000","openMid":1.2,"highMid":1.4,"lowMid":1.0,"closeMid":1.1,"volume":1337,"complete":true}]}""")
+                  case _ ⇒ fail("Unknown candle type!")
+                }
+              }
+              case (None, Some(_), Some(_)) ⇒ complete {
+                params.get("candleFormat") match {
+                  case Some("bidask") ⇒ HttpEntity("""{"candles":[{"time":"1455488788000000","openBid":1.2001,"openAsk":1.2005,"highBid":1.302,"highAsk":1.304,"lowBid":1.1001,"lowAsk":1.1005,"closeBid":1.2101,"closeAsk":1.2105,"volume":42,"complete":true}]}""").withContentType(ContentTypes.`application/json`)
+                  case Some("midpoint") ⇒ HttpEntity("""{"candles":[{"time":"1455488788000000","openMid":1.3,"highMid":1.5,"lowMid":1.1,"closeMid":1.2,"volume":42,"complete":true}]}""")
+                  case _ ⇒ fail("Unknown candle type!")
+                }
+              }
+              case _ ⇒ fail("Illegal combination of arguments")
+            }
+          }
+        }
+      }
+    } ~
     path("v1" / "accounts" / LongNumber) { accountId ⇒
       encodeResponseWith(Gzip) {
         complete {

@@ -70,8 +70,8 @@ private[rates] object RatesClientRequests {
     */
   def candlesRequest[R](instrument: String, count: Option[Int], startTime: Option[Long], endTime: Option[Long], includeFirst: Option[Boolean], granularity: CandleGranularity, candleType: CandleTypes.Aux[R]): HttpRequest =
     HttpRequest(GET, Uri("/v1/candles").withRawQueryString(rawQueryStringOf(
-      param("instrument", instrument) :: param("count", count) ::
-        optionalParam("startTime", startTime) :: optionalParam("endTime", endTime) ::
+      param("instrument", instrument) :: optionalParam("count", count) ::
+        optionalParam("start", startTime) :: optionalParam("end", endTime) ::
         param("granularity", granularity.toString) :: param("candleFormat", candleType.uriParam) ::
         optionalParam("includeFirst", includeFirst) :: Nil
     )))

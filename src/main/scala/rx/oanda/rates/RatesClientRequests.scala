@@ -76,6 +76,17 @@ private[rates] object RatesClientRequests {
         optionalParam("includeFirst", includeFirst) :: Nil
     )))
 
+  /**
+    * Builds the request to open a streaming connection to receive real time market prices for specified instruments.
+    *
+    * @param accountId   The account that prices are applicable for.
+    * @param instruments A list of instruments to fetch prices for.
+    * @param sessionId   A unique session id used to identify the rate stream connection.
+    *                    The value specified must be between 1 to 12 alphanumeric characters.
+    *                    If a request is made with a session id that matches the session id of an
+    *                    existing connection, the older connection will be disconnected.
+    * @return The request to use wihtout headers.
+    */
   def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: Option[String]): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(param("accountId", accountId) :: listParam("instruments", instruments) :: optionalParam("sessionId", sessionId) :: Nil)))
 

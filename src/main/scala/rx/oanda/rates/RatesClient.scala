@@ -125,17 +125,13 @@ class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem
     *                     The value should be one of the available instrument codes from `instruments`.
     * @param count        The number of candlesticks to retrieve. If not specified, count will default to 500.
     *                     The maximum acceptable value for count is 5000.
-    * @param includeFirst If it is set to “true”, the candlestick covered by the start timestamp will be returned.
-    *                     If it is set to “false”, this candlestick will not be returned.
-    *                     This field exists so clients may easily ensure that they can poll for all candles more recent
-    *                     than their last received candle.
     * @param granularity  The time range represented by each candlestick. The default value is S5.
     * @param candleType   Determines the candlestick representation type.
     *                     This can by either `CandleTypes.BidAsk` or `CandleTypes.Midpoint`.
     * @return A source which emits the last `count` candlesticks for the requested instrument.
     */
-  def candlesByCount[R](instrument: String, count: Int = 500, includeFirst: Boolean = true, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, NotUsed] =
-    makeRequest[Vector[candleType.R]](candlesRequest(instrument, Some(count), None, None, Some(includeFirst), granularity, candleType).withHeaders(env.headers))(candleType.decoder)
+  def candlesByCount[R](instrument: String, count: Int = 500, granularity: CandleGranularity = S5, candleType: CandleTypes.Aux[R] = CandleTypes.BidAsk): Source[R, NotUsed] =
+    makeRequest[Vector[candleType.R]](candlesRequest(instrument, Some(count), None, None, None, granularity, candleType).withHeaders(env.headers))(candleType.decoder)
       .log("candles").mapConcat(identity).log("candle")
 
   /**

@@ -24,49 +24,30 @@ import akka.http.scaladsl.model.headers._
 import akka.stream.Materializer
 import akka.stream.scaladsl._
 
-import scala.annotation.implicitNotFound
 import scala.util.Try
 
 
-case class OandaEnvironment[A <: OandaEnvironment.Auth](
+case class OandaEnvironment(
   name: String,
   apiEndpoint: String,
   streamEndpoint: String,
-  token: Option[String] = None
-)  {
-  override def toString: String = name
-}
+  token: String
+)
 
 object OandaEnvironment {
 
-  sealed trait Auth
-  sealed trait NoAuth extends Auth
-  sealed trait WithAuth extends Auth
-
-  @implicitNotFound("You may only call this on an account that supports authentication.")
-  type MustHaveAuth[A] = A =:= WithAuth
-
-  @implicitNotFound("You may only call this on an account that does not use authentication.")
-  type MustNotHaveAuth[A] = A =:= NoAuth
-
-  @implicitNotFound("No ConnectionPool for ${A}")
-  trait ConnectionPool[A <: Auth] {
+  trait ConnectionPool {
 
     def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem):
-      Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool]
+    Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool]
 
   }
 
   object ConnectionPool {
 
-    implicit val AuthConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
+    implicit val connectionPool: ConnectionPool = new ConnectionPool {
       def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
         Http().cachedHostConnectionPoolHttps[T](host = endpoint).log("connection")
-    }
-
-    implicit val NoAuthConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
-      def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-        Http().cachedHostConnectionPool[T](host = endpoint).log("connection")
     }
 
   }
@@ -74,36 +55,28 @@ object OandaEnvironment {
   val unixTime: HttpHeader = RawHeader("X-Accept-Datetime-Format", "UNIX")
   val gzipEncoding: HttpHeader = `Accept-Encoding`(HttpEncodings.gzip)
 
-  implicit final class OandaEnvironmentOps[A <: Auth](private val env: OandaEnvironment[A]) extends AnyVal {
+  implicit final class OandaEnvironmentOps(private val env: OandaEnvironment) extends AnyVal {
 
-    def headers = unixTime :: gzipEncoding :: env.token.map(t ⇒ Authorization(OAuth2BearerToken(t))).toList
+    def headers = unixTime :: gzipEncoding :: Authorization(OAuth2BearerToken(env.token)) :: Nil
 
-    def apiFlow[T](implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](env.apiEndpoint)
-    def streamFlow[T](implicit A: ConnectionPool[A], mat: Materializer, sys: ActorSystem) = A.apply[T](env.streamEndpoint)
+    def apiFlow[T](implicit A: ConnectionPool, mat: Materializer, sys: ActorSystem) = A.apply[T](env.apiEndpoint)
+    def streamFlow[T](implicit A: ConnectionPool, mat: Materializer, sys: ActorSystem) = A.apply[T](env.streamEndpoint)
 
   }
 
   /**
-    * An environment purely for testing; it is not as fast, stable and reliable as the other environments
-    * (i.e. it can go down once in a while). Market data returned from this environment is simulated
-    * (not real market data).
-    */
-  val SandboxEnvironment =
-    OandaEnvironment[NoAuth]("Sandbox", "api-sandbox.oanda.com", "stream-sandbox.oanda.com")
-
-  /**
-    * A stable environment; recommended for testing with your fxTrade Practice
+    * Recommended for testing with your fxTrade Practice
     * account and your personal access token.
     */
   def TradePracticeEnvironment(token: String) =
-    OandaEnvironment[WithAuth]("fxTrade Practice", "api-fxpractice.oanda.com", "stream-fxpractice.oanda.com", Some(token))
+    OandaEnvironment("fxTrade Practice", "api-fxpractice.oanda.com", "stream-fxpractice.oanda.com", token)
 
   /**
-    * A stable environment; recommended for production-ready code to execute
+    * Recommended for production-ready code to execute
     * with your fxTrade account and your personal access token.
     */
   def TradeEnvironment(token: String) =
-    OandaEnvironment[WithAuth]("fxTrade", "api-fxtrade.oanda.com", "stream-fxtrade.oanda.com", Some(token))
+    OandaEnvironment("fxTrade", "api-fxtrade.oanda.com", "stream-fxtrade.oanda.com", token)
 
 }
 

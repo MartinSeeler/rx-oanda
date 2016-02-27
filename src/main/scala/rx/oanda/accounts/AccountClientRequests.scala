@@ -18,29 +18,17 @@ package rx.oanda.accounts
 
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{HttpRequest, Uri}
-import rx.oanda.utils.QueryHelper._
 
 private[accounts] object AccountClientRequests {
 
   /**
     * Builds the request to get a list of accounts owned by the user.
     *
-    * @param username The name of the user. Note: This is only required on the sandbox,
-    *                 on production systems the access token will identify the user.
     * @return The request to use without headers.
     */
-  def accountListRequest(username: Option[String]): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalParam("username", username) :: Nil)))
+  val accountListRequest: HttpRequest =
+    HttpRequest(GET, Uri(s"/v1/accounts"))
 
-  /**
-    * Builds the request to create a new account. This call is only available on the sandbox system.
-    *
-    * @param currency Optional name of the home currency for the newly created account.
-    * @return The request to use without headers.
-    */
-  def createTestAccountRequest(currency: Option[String]): HttpRequest =
-    HttpRequest(POST, Uri(s"/v1/accounts").withRawQueryString(rawQueryStringOf(optionalParam("currency", currency) :: Nil)))
-  
   /**
     * Builds the request to get informations about an account.
     *

@@ -32,20 +32,6 @@ class ConnectionFlowSpec extends FlatSpec with Matchers with Scalatest {
   implicit val mat = ActorMaterializer()
   import sys.dispatcher
 
-  it must "provide the correct api connection for the sandbox environment" in {
-    val streamFlow = OandaEnvironment.SandboxEnvironment.apiFlow[Long]
-    val pool = Source.empty.viaMat(streamFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
-    pool.setup.host should be ("api-sandbox.oanda.com")
-    pool.setup.port shouldBe 80
-  }
-
-  it must "provide the correct stream connection for the sandbox environment" in {
-    val apiFlow = OandaEnvironment.SandboxEnvironment.streamFlow[Long]
-    val pool = Source.empty.viaMat(apiFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()
-    pool.setup.host should be ("stream-sandbox.oanda.com")
-    pool.setup.port shouldBe 80
-  }
-
   it must "provide the correct api connection for the trade practice environment" in {
     val apiFlow = OandaEnvironment.TradePracticeEnvironment("token").apiFlow[Long]
     val pool = Source.empty.viaMat(apiFlow)(Keep.right).toMat(Sink.ignore)(Keep.left).run()

@@ -25,7 +25,7 @@ import akka.stream.scaladsl.Source
 import rx.oanda.OandaEnvironment._
 import rx.oanda.{ApiConnection, OandaEnvironment}
 
-class PositionClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
+class PositionClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool)
   extends ApiConnection {
 
   private[oanda] val apiConnection = env.apiFlow[Long]

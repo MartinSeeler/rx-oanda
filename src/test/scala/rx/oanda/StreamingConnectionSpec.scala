@@ -18,7 +18,6 @@ package rx.oanda
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
@@ -29,7 +28,6 @@ import akka.stream.testkit.javadsl.TestSink
 import akka.util.ByteString
 import cats.data.Xor
 import org.scalatest._
-import rx.oanda.accounts.SandboxAccount
 import rx.oanda.errors.{InvalidInstrument, OandaException}
 import rx.oanda.rates.Price
 import rx.oanda.utils.Heartbeat

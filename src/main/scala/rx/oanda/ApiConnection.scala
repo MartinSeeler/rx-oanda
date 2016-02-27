@@ -19,10 +19,10 @@ package rx.oanda
 import akka.NotUsed
 import akka.http.javadsl.model.headers.ContentEncoding
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.coding._
+import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.HttpEncodings.gzip
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.scaladsl.{Flow, Source}
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder

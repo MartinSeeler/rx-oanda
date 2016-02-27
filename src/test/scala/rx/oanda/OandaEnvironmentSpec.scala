@@ -16,16 +16,15 @@
 
 package rx.oanda
 
-import OandaEnvironment._
-import akka.http.scaladsl.model.headers.{OAuth2BearerToken, Authorization}
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import org.scalatest._
+import rx.oanda.OandaEnvironment._
 
 class OandaEnvironmentSpec extends FlatSpec with Matchers {
 
   behavior of "The Oanda Environment"
 
   it must "provide correct request headers based on the environment" in {
-    OandaEnvironment.SandboxEnvironment.headers should be (unixTime :: gzipEncoding :: Nil)
     OandaEnvironment.TradePracticeEnvironment("key").headers should be (unixTime :: gzipEncoding :: Authorization(OAuth2BearerToken("key")) :: Nil)
     OandaEnvironment.TradeEnvironment("key").headers should be (unixTime :: gzipEncoding :: Authorization(OAuth2BearerToken("key")) :: Nil)
   }

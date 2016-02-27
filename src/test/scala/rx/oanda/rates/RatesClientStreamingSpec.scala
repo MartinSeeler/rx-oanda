@@ -21,18 +21,16 @@ import cats.data.Xor
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
-import rx.oanda.rates.candles.{BidAskCandle, CandleTypes, MidpointCandle}
 import rx.oanda.utils.Heartbeat
 
 class RatesClientStreamingSpec extends FlatSpec with PropertyChecks with Matchers with FakeRateStreamingEndpoints {
 
   behavior of "The RatesClient"
 
-  val noAuthClient = new RatesClient(OandaEnvironment.SandboxEnvironment)
-  val authClient = new RatesClient(OandaEnvironment.TradePracticeEnvironment("token"))
+  val testClient = new RatesClient(OandaEnvironment.TradePracticeEnvironment("token"))
 
   it must "stream prices and heartbeats with authentication" in {
-    authClient.livePrices(8954946L, "AUD_CAD" :: "AUD_CHF" :: Nil)
+    testClient.livePrices(8954946L, "AUD_CAD" :: "AUD_CHF" :: Nil)
       .runWith(TestSink.probe[Xor[Price, Heartbeat]])
       .requestNext(Xor.left(Price("AUD_CAD", 1391114828000000L, 0.98114, 0.98139)))
       .requestNext(Xor.left(Price("AUD_CHF", 1391114828000000L, 0.79353, 0.79382)))

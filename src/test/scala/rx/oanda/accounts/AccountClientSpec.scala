@@ -25,19 +25,10 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
 
   behavior of "The AccountClient"
 
-  val noAuthClient = new AccountClient(OandaEnvironment.SandboxEnvironment)
-  val authClient = new AccountClient(OandaEnvironment.TradePracticeEnvironment("token"))
+  val testClient = new AccountClient(OandaEnvironment.TradePracticeEnvironment("token"))
 
   it must "retrieve all accounts with authentication" in {
-    authClient.allAccounts
-      .runWith(TestSink.probe[ShortAccount])
-      .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
-      .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
-      .expectComplete()
-  }
-
-  it must "retrieve all accounts without authentication" in {
-    noAuthClient.allAccounts("foobar")
+    testClient.allAccounts()
       .runWith(TestSink.probe[ShortAccount])
       .requestNext(ShortAccount(8954947L, "Primary", "USD", 0.05))
       .requestNext(ShortAccount(8954946L, "Demo", "EUR", 0.05))
@@ -45,16 +36,9 @@ class AccountClientSpec extends FlatSpec with PropertyChecks with Matchers with 
   }
 
   it must "retrieve a specific account with and without authentication" in {
-    authClient.accountById(8954947L)
+    testClient.accountById(8954947L)
       .runWith(TestSink.probe[Account])
       .requestNext(Account(8954947L, "Primary", 100000, 1.1, -2.2, 3.3, 100000, 1, 2, 0.05, "USD"))
-      .expectComplete()
-  }
-
-  it must "create a sandbox account without authentication" in {
-    noAuthClient.createTestAccount()
-      .runWith(TestSink.probe[SandboxAccount])
-      .requestNext(SandboxAccount("keith", "Rocir~olf4", 8954947L))
       .expectComplete()
   }
 

@@ -17,8 +17,8 @@
 package rx.oanda.rates
 
 import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model.{Uri, HttpRequest}
-import rx.oanda.rates.candles.{CandleTypes, CandleGranularity}
+import akka.http.scaladsl.model.{HttpRequest, Uri}
+import rx.oanda.rates.candles.{CandleGranularity, CandleTypes}
 import rx.oanda.utils.QueryHelper._
 
 private[rates] object RatesClientRequests {

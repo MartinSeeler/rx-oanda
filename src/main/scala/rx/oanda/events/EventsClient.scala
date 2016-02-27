@@ -19,16 +19,16 @@ package rx.oanda.events
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model.{Uri, HttpRequest}
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import cats.data.Xor
-import rx.oanda._
 import rx.oanda.OandaEnvironment._
+import rx.oanda._
 import rx.oanda.events.EventsClient.accountsQuery
 import rx.oanda.utils.Heartbeat
 
-class EventsClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A]) extends StreamingConnection {
+class EventsClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool) extends StreamingConnection {
 
   private[oanda] val streamingConnection = env.streamFlow[Long]
 

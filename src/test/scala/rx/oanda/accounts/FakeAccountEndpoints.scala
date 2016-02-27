@@ -25,7 +25,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.Flow
 import akka.stream.{ActorMaterializer, Materializer}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import rx.oanda.OandaEnvironment.{ConnectionPool, NoAuth, WithAuth}
+import rx.oanda.OandaEnvironment.ConnectionPool
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -62,12 +62,7 @@ trait FakeAccountEndpoints extends FlatSpec with BeforeAndAfterAll {
 
   var bindingFuture: Future[ServerBinding] = _
 
-  implicit val WithAuthTestConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
-    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-      Http().cachedHostConnectionPool[T]("localhost", 8001).log("connection")
-  }
-
-  implicit val NoAuthTestConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
+  implicit val WithAuthTestConnectionPool: ConnectionPool = new ConnectionPool {
     def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
       Http().cachedHostConnectionPool[T]("localhost", 8001).log("connection")
   }

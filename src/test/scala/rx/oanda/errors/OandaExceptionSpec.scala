@@ -16,9 +16,6 @@
 
 package rx.oanda.errors
 
-import cats.data.Xor
-import io.circe.DecodingFailure
-import io.circe.parser._
 import org.scalatest._
 
 class OandaExceptionSpec extends FlatSpec with Matchers {

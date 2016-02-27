@@ -21,14 +21,14 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import cats.data.Xor
-import rx.oanda.OandaEnvironment.{Auth, ConnectionPool}
+import rx.oanda.OandaEnvironment.ConnectionPool
 import rx.oanda.rates.RatesClientRequests._
 import rx.oanda.rates.candles.CandleGranularities.S5
 import rx.oanda.rates.candles.{CandleGranularity, CandleTypes}
 import rx.oanda.utils.Heartbeat
 import rx.oanda.{ApiConnection, OandaEnvironment, StreamingConnection}
 
-class RatesClient[A <: Auth](env: OandaEnvironment[A])(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool[A])
+class RatesClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool)
   extends ApiConnection with StreamingConnection {
 
   private[oanda] val streamingConnection = env.streamFlow[Long]

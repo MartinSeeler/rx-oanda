@@ -109,6 +109,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse an unsupported content type error" in {
+    val json =
+      """
+        |{
+        |  "code": 42,
+        |  "message": "Received request with unsupported Content-Type: 'text/plain; charset=utf-8'",
+        |  "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(UnsupportedContentType("Received request with unsupported Content-Type: 'text/plain; charset=utf-8'")) ⇒
+    }
+  }
+
   it must "parse an invalid timestamp error" in {
     val json =
       """

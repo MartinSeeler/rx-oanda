@@ -34,28 +34,23 @@ class PositionClientSpec extends FlatSpec with PropertyChecks with Matchers with
   implicit val mat = ActorMaterializer()
   import sys.dispatcher
 
-  val sandboxClient = new PositionClient(OandaEnvironment.SandboxEnvironment)
   val practiceClient = new PositionClient(OandaEnvironment.TradePracticeEnvironment("token"))
   val tradeClient = new PositionClient(OandaEnvironment.TradeEnvironment("token"))
 
   it must "build the correct request to get all positions" in {
     forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.positionsRequest(accountId)
       val practiceReq = practiceClient.positionsRequest(accountId)
       val tradeReq = tradeClient.positionsRequest(accountId)
 
       // match method
-      sandboxReq.method should be(HttpMethods.GET)
       practiceReq.method should be(HttpMethods.GET)
       tradeReq.method should be(HttpMethods.GET)
 
       // match uri
-      sandboxReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions")
       practiceReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions")
       tradeReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions")
 
       // match headers
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
       practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
       tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
     }
@@ -63,22 +58,18 @@ class PositionClientSpec extends FlatSpec with PropertyChecks with Matchers with
 
   it must "build the correct request to get the position for an instrument" in {
     forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.positionRequest(accountId, "EUR_USD")
       val practiceReq = practiceClient.positionRequest(accountId, "EUR_USD")
       val tradeReq = tradeClient.positionRequest(accountId, "EUR_USD")
 
       // match method
-      sandboxReq.method should be(HttpMethods.GET)
       practiceReq.method should be(HttpMethods.GET)
       tradeReq.method should be(HttpMethods.GET)
 
       // match uri
-      sandboxReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
       practiceReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
       tradeReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
 
       // match headers
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
       practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
       tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
     }
@@ -86,22 +77,18 @@ class PositionClientSpec extends FlatSpec with PropertyChecks with Matchers with
 
   it must "build the correct request to close the position for an instrument" in {
     forAll("accountId") { (accountId: Long) ⇒
-      val sandboxReq = sandboxClient.closePositionRequest(accountId, "EUR_USD")
       val practiceReq = practiceClient.closePositionRequest(accountId, "EUR_USD")
       val tradeReq = tradeClient.closePositionRequest(accountId, "EUR_USD")
 
       // match method
-      sandboxReq.method should be(HttpMethods.DELETE)
       practiceReq.method should be(HttpMethods.DELETE)
       tradeReq.method should be(HttpMethods.DELETE)
 
       // match uri
-      sandboxReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
       practiceReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
       tradeReq.uri.path.toString should be(s"/v1/accounts/$accountId/positions/EUR_USD")
 
       // match headers
-      sandboxReq.headers shouldNot contain(Authorization(OAuth2BearerToken("token")))
       practiceReq.headers should contain(Authorization(OAuth2BearerToken("token")))
       tradeReq.headers should contain(Authorization(OAuth2BearerToken("token")))
     }

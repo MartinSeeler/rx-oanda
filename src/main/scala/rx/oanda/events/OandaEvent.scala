@@ -17,10 +17,9 @@
 package rx.oanda.events
 
 import cats.data.Xor
-import rx.oanda.utils.Side
-
-import io.circe.{DecodingFailure, Decoder}
 import io.circe.generic.semiauto._
+import io.circe.{Decoder, DecodingFailure}
+import rx.oanda.utils.Side
 
 trait OandaEvent {
   val id: Long

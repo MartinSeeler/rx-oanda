@@ -19,15 +19,13 @@ package rx.oanda.rates
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.{HostConnectionPool, ServerBinding}
-import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.HttpEntity.ChunkStreamPart
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.scaladsl.{Source, Flow}
+import akka.stream.scaladsl.{Flow, Source}
 import akka.stream.{ActorMaterializer, Materializer}
-import akka.util.ByteString
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import rx.oanda.OandaEnvironment.{ConnectionPool, NoAuth, WithAuth}
+import rx.oanda.OandaEnvironment.ConnectionPool
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -59,12 +57,7 @@ trait FakeRateStreamingEndpoints extends FlatSpec with BeforeAndAfterAll {
 
   var bindingFuture: Future[ServerBinding] = _
 
-  implicit val WithAuthTestConnectionPool: ConnectionPool[WithAuth] = new ConnectionPool[WithAuth] {
-    def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
-      Http().cachedHostConnectionPool[T]("localhost", 8003).log("connection")
-  }
-
-  implicit val NoAuthTestConnectionPool: ConnectionPool[NoAuth] = new ConnectionPool[NoAuth] {
+  implicit val WithAuthTestConnectionPool: ConnectionPool = new ConnectionPool {
     def apply[T](endpoint: String)(implicit mat: Materializer, system: ActorSystem): Flow[(HttpRequest, T), (Try[HttpResponse], T), HostConnectionPool] =
       Http().cachedHostConnectionPool[T]("localhost", 8003).log("connection")
   }

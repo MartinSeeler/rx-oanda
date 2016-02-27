@@ -18,7 +18,6 @@ package rx.oanda.errors
 
 import akka.http.scaladsl.model.HttpEntity
 import akka.stream.scaladsl.Source
-import cats.data.Xor
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe._
 import io.circe.generic.semiauto._
@@ -37,6 +36,7 @@ object OandaError {
       case 4 ⇒ c.as[InvalidAuhtorization]
       case 36 ⇒ c.as[InvalidRange]
       case 40 ⇒ c.as[MalformedQueryString]
+      case 42 ⇒ c.as[UnsupportedContentType]
       case 45 ⇒ c.as[InvalidTimestamp]
       case 46 ⇒ c.as[InvalidInstrument]
       case 47 ⇒ c.as[ArgumentConflict]
@@ -71,6 +71,11 @@ case class MissingArgument(message: String) extends OandaError
 
 object MissingArgument {
   implicit val decodeMissingArgument: Decoder[MissingArgument] = deriveDecoder
+}
+
+case class UnsupportedContentType(message: String) extends OandaError
+object UnsupportedContentType {
+  implicit val decodeUnsupportedContentType: Decoder[UnsupportedContentType] = deriveDecoder
 }
 
 case class MissingAuthorization(message: String) extends OandaError

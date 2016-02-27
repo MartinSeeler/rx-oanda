@@ -16,8 +16,7 @@
 
 package rx.oanda.orders
 
-import cats.data.Xor
-import io.circe.{DecodingFailure, Decoder}
+import io.circe.Decoder
 import io.circe.generic.semiauto._
 import rx.oanda.utils.Side
 

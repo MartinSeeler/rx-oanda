@@ -19,7 +19,7 @@ package rx.oanda.rates.candles
 import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe.parser._
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class BidAskCandleDecoderSpec extends FlatSpec with Matchers {
 

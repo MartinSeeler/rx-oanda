@@ -30,12 +30,10 @@ import akka.stream.scaladsl._
 import akka.stream.testkit.javadsl.TestSink
 import akka.util.ByteString
 import org.scalatest._
-import rx.oanda.OandaEnvironment._
-import rx.oanda.accounts.SandboxAccount
+import rx.oanda.accounts.Account
 import rx.oanda.errors.{InvalidInstrument, OandaException}
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
 
 class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
 
@@ -83,18 +81,10 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
       .expectError(new OandaException(InvalidInstrument("Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument")))
   }
 
-  it must "parse a sandbox account with gzip encoding" in {
-    apiConnection
-      .makeRequest[SandboxAccount](HttpRequest(GET, "/sandboxAccount"))
-      .runWith(TestSink.probe(system))
-      .request(1)
-      .expectNext(SandboxAccount("keith", "Rocir~olf4", 8954947L))
-  }
-
   it must "fail when no connection is possible" in {
     new ApiConnection {
       private[oanda] val apiConnection = Http().cachedHostConnectionPool[Long]("_", 8080)
-    }.makeRequest[SandboxAccount](HttpRequest(GET, "/sandboxAccount"))
+    }.makeRequest[Account](HttpRequest(GET, "/sandboxAccount"))
       .runWith(TestSink.probe(system))
       .request(1)
       .expectError()

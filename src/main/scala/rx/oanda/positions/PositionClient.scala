@@ -25,27 +25,41 @@ import akka.stream.scaladsl.Source
 import rx.oanda.OandaEnvironment._
 import rx.oanda.{ApiConnection, OandaEnvironment}
 
+import PositionClientRequests._
+
 class PositionClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool)
   extends ApiConnection {
 
   private[oanda] val apiConnection = env.apiFlow[Long]
 
-  private[oanda] def positionsRequest(accountId: Long): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions"), headers = env.headers)
-
-  private[oanda] def positionRequest(accountId: Long, instrument: String): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
-
-  private[oanda] def closePositionRequest(accountId: Long, instrument: String): HttpRequest =
-    HttpRequest(DELETE, Uri(s"/v1/accounts/$accountId/positions/$instrument"), headers = env.headers)
-
+  /**
+    * Get all open positions for an account.
+    *
+    * @param accountId The account id to use.
+    * @return A stream which emits all currently open positions, if any.
+    */
   def positions(accountId: Long): Source[Position, NotUsed] =
-    makeRequest[Vector[Position]](positionsRequest(accountId)).mapConcat(identity)
+    makeRequest[Vector[Position]](positionsRequest(accountId).withHeaders(env.headers))
+      .log("positions").mapConcat(identity).log("position")
 
-  def position(accountId: Long, instrument: String): Source[Position, NotUsed] =
-    makeRequest[Position](positionRequest(accountId, instrument))
+  /**
+    * Gets the position for an instrument, if available.
+    *
+    * @param accountId  The account id to use.
+    * @param instrument The instrument to use for the lookup.
+    * @return A source which emits the position for the instrument, if any.
+    */
+  def positionByInstrument(accountId: Long, instrument: String): Source[Position, NotUsed] =
+    makeRequest[Position](positionRequest(accountId, instrument).withHeaders(env.headers)).log("position")
 
+  /**
+    * Close an existing position for an instrument.
+    *
+    * @param accountId  The account id to use.
+    * @param instrument The instrument which shall be closed.
+    * @return A source which emits the closed position.
+    */
   def closePosition(accountId: Long, instrument: String): Source[ClosedPosition, NotUsed] =
-    makeRequest[ClosedPosition](closePositionRequest(accountId, instrument))
+    makeRequest[ClosedPosition](closePositionRequest(accountId, instrument).withHeaders(env.headers)).log("position-close")
 
 }

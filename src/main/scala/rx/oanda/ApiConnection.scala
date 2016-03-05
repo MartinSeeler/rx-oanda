@@ -27,6 +27,7 @@ import akka.stream.scaladsl.{Flow, Source}
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
 import rx.oanda.errors.OandaError._
+import rx.oanda.errors.{OandaError, OandaException}
 
 import scala.util.{Failure, Success, Try}
 
@@ -45,7 +46,15 @@ trait ApiConnection {
         case (Success(HttpResponse(OK, _, entity, _)), _) ⇒
           entity.dataBytes.log("bytes", _.utf8String)
             .via(CirceStreamSupport.decode[R]).log("decode")
-        case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
+        case (Success(HttpResponse(_, headers, entity, _)), _) if headers contains ContentEncoding.create(gzip) ⇒
+          entity.dataBytes.log("gzip-bytes", _.utf8String)
+            .via(Gzip.decoderFlow).log("bytes", _.utf8String)
+            .via(CirceStreamSupport.decode[OandaError]).log("decode")
+            .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError))).log("oanda-error")
+        case (Success(HttpResponse(_, _, entity, _)), _) ⇒
+          entity.dataBytes.log("bytes", _.utf8String)
+            .via(CirceStreamSupport.decode[OandaError]).log("decode")
+            .flatMapConcat(oandaError ⇒ Source.failed(OandaException(oandaError))).log("oanda-error")
         case (Failure(e), _) ⇒ Source.failed(e)
       }.log("api-request")
 

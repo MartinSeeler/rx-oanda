@@ -34,6 +34,7 @@ object OandaError {
       case 2 ⇒ c.as[MissingArgument]
       case 3 ⇒ c.as[MissingAuthorization]
       case 4 ⇒ c.as[InvalidAuhtorization]
+      case 34 ⇒ c.as[InvalidTakeProfit]
       case 36 ⇒ c.as[InvalidRange]
       case 40 ⇒ c.as[MalformedQueryString]
       case 42 ⇒ c.as[UnsupportedContentType]
@@ -106,6 +107,12 @@ case class InvalidInstrument(message: String) extends OandaError
 
 object InvalidInstrument {
   implicit val decodeInvalidInstrument: Decoder[InvalidInstrument] = deriveDecoder
+}
+
+case class InvalidTakeProfit(message: String) extends OandaError
+
+object InvalidTakeProfit {
+  implicit val decodeInvalidTakeProfit: Decoder[InvalidTakeProfit] = deriveDecoder
 }
 
 case class InvalidRange(message: String) extends OandaError

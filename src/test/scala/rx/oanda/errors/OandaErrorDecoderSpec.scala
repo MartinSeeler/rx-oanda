@@ -81,6 +81,20 @@ class OandaErrorDecoderSpec extends FlatSpec with Matchers {
     }
   }
 
+  it must "parse an invalid take profit error" in {
+    val json =
+      """
+        |{
+        | "code": 34,
+        | "message": "Invalid takeProfit error: requested takeProfit is above price 85.5910",
+        | "moreInfo": "http://developer.oanda.com/docs/v1/troubleshooting/#errors"
+        |}
+      """.stripMargin
+    decode[OandaError](json) should matchPattern {
+      case Xor.Right(InvalidTakeProfit("Invalid takeProfit error: requested takeProfit is above price 85.5910")) ⇒
+    }
+  }
+
   it must "parse an invalid range error" in {
     val json =
       """

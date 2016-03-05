@@ -48,7 +48,7 @@ class TradeClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materia
     * @param count      The number of trades to receive.
     * @return A source which emits up to `count` trades of the specified instrument.
     */
-  def trades(accountId: Long, instrument: String, count: Int = 50, maxId: Option[Long] = None): Source[Trade, NotUsed] =
+  def tradesByInstrument(accountId: Long, instrument: String, count: Int = 50, maxId: Option[Long] = None): Source[Trade, NotUsed] =
     makeRequest[Vector[Trade]](tradesRequest(accountId, maxId, Some(count), Some(instrument), Nil).withHeaders(env.headers))
       .log("trades").mapConcat(identity).log("trade")
 

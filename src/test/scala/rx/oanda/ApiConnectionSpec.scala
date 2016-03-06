@@ -46,16 +46,20 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
   val serverSource = Http().bind("localhost", 8080)
 
   val requestHandler: HttpRequest => Future[HttpResponse] = {
-    case HttpRequest(GET, Uri.Path("/noGzip"), _, _, _) =>
+    case HttpRequest(GET, Uri.Path("/200noGzip"), _, _, _) =>
       Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
-        "{\"username\":\"keith\",\"password\":\"Rocir~olf4\",\"accountId\":8954947}")))
-    case HttpRequest(GET, Uri.Path("/sandboxAccount"), _, _, _) =>
+        "{\"accountId\":8954947,\"accountName\":\"Primary\",\"balance\":100000,\"unrealizedPl\":1.1,\"realizedPl\":-2.2,\"marginUsed\":3.3,\"marginAvail\":100000,\"openTrades\":1,\"openOrders\":2,\"marginRate\":0.05,\"accountCurrency\":\"USD\"}")))
+    case HttpRequest(GET, Uri.Path("/200withGzip"), _, _, _) =>
       Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`,
-        data = Source.single(ByteString.fromString("{\"username\":\"keith\",\"password\":\"Rocir~olf4\",\"accountId\":8954947}")).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
-    case HttpRequest(GET, Uri.Path("/oandaError"), _, _, _) =>
+        data = Source.single(ByteString.fromString("{\"accountId\":8954947,\"accountName\":\"Primary\",\"balance\":100000,\"unrealizedPl\":1.1,\"realizedPl\":-2.2,\"marginUsed\":3.3,\"marginAvail\":100000,\"openTrades\":1,\"openOrders\":2,\"marginRate\":0.05,\"accountCurrency\":\"USD\"}")).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
+    case HttpRequest(GET, Uri.Path("/400noGzip"), _, _, _) =>
       Future.successful(HttpResponse(status = BadRequest,
         entity = HttpEntity(ContentTypes.`application/json`,
           "{\"code\":46,\"message\":\"Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument\",\"moreInfo\":\"http://developer.oanda.com/docs/v1/troubleshooting/#errors\"}")))
+    case HttpRequest(GET, Uri.Path("/400withGzip"), _, _, _) =>
+      Future.successful(HttpResponse(status = BadRequest,
+        entity = HttpEntity(ContentTypes.`application/json`,
+          data = Source.single(ByteString.fromString("{\"code\":46,\"message\":\"Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument\",\"moreInfo\":\"http://developer.oanda.com/docs/v1/troubleshooting/#errors\"}")).via(Gzip.encoderFlow)), headers = List(ContentEncoding.create(gzip))))
   }
 
   val bindingFuture: Future[Http.ServerBinding] =
@@ -65,17 +69,33 @@ class ApiConnectionSpec extends FlatSpec with Matchers with Scalatest {
     private[oanda] val apiConnection = Http().cachedHostConnectionPool[Long]("localhost", 8080)
   }
 
-  it must "fail when the content is not gzip encoded" in {
+  it must "decode an entity when the status code is 200 and no gzip encoding present" in {
     apiConnection
-      .makeRequest[Long](HttpRequest(GET, "/noGzip"))
+      .makeRequest[Account](HttpRequest(GET, "/200noGzip"))
       .runWith(TestSink.probe(system))
-      .request(1)
-      .expectError()
+      .requestNext(Account(8954947L, "Primary", 100000, 1.1, -2.2, 3.3, 100000, 1, 2, 0.05, "USD"))
+      .expectComplete()
   }
 
-  it must "parse an oanda error when the status code is not 200" in {
+  it must "decode an entity when the status code is 200 and gzip encoding is present" in {
     apiConnection
-      .makeRequest[Long](HttpRequest(GET, "/oandaError"))
+      .makeRequest[Account](HttpRequest(GET, "/200withGzip"))
+      .runWith(TestSink.probe(system))
+      .requestNext(Account(8954947L, "Primary", 100000, 1.1, -2.2, 3.3, 100000, 1, 2, 0.05, "USD"))
+      .expectComplete()
+  }
+
+  it must "decode an oanda error when the status code is not 200 and no gzip encoding present" in {
+    apiConnection
+      .makeRequest[Long](HttpRequest(GET, "/400noGzip"))
+      .runWith(TestSink.probe(system))
+      .request(1)
+      .expectError(new OandaException(InvalidInstrument("Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument")))
+  }
+
+  it must "decode an oanda error when the status code is not 200 and gzip encoding is present" in {
+    apiConnection
+      .makeRequest[Long](HttpRequest(GET, "/400withGzip"))
       .runWith(TestSink.probe(system))
       .request(1)
       .expectError(new OandaException(InvalidInstrument("Invalid instrument: EUR_USD%2CEUR_GBP is not a valid instrument")))

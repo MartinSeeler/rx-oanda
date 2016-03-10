@@ -23,6 +23,12 @@ import rx.oanda.utils.Side
 
 trait OandaEvent {
   val id: Long
+  val accountId: Long
+  val time: Long
+}
+
+trait InstrumentEvent {
+  val instrument: String
 }
 
 object OandaEvent {
@@ -90,7 +96,7 @@ case class MarketOrderCreated(
   trailingStopLossDistance: Option[Double],
   tradeOpened: Option[TradeOpened],
   tradeReduced: Option[TradeReduced]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object MarketOrderCreated {
   implicit val decodeMarketorderCreated: Decoder[MarketOrderCreated] = deriveDecoder
@@ -117,7 +123,7 @@ case class StopOrderCreated(
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object StopOrderCreated {
   implicit val decodeStopOrderCreated: Decoder[StopOrderCreated] = deriveDecoder
@@ -144,7 +150,7 @@ case class LimitOrderCreated(
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object LimitOrderCreated {
   implicit val decodeLimitOrderCreated: Decoder[LimitOrderCreated] = deriveDecoder
@@ -165,7 +171,7 @@ case class MarketIfTouchedOrderCreated(
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object MarketIfTouchedOrderCreated {
   implicit val decodeMarketIfTouchedOrderCreated: Decoder[MarketIfTouchedOrderCreated] = deriveDecoder
@@ -186,7 +192,7 @@ case class OrderUpdated(
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object OrderUpdated {
   implicit val decodeOrderUpdated: Decoder[OrderUpdated] = deriveDecoder
@@ -223,7 +229,7 @@ case class OrderFilled(
   trailingStopLossDistance: Option[Double],
   tradeOpened: Option[TradeOpened],
   tradeReduced: Option[TradeReduced]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object OrderFilled {
   implicit val decodeOrderFilled: Decoder[OrderFilled] = deriveDecoder
@@ -239,7 +245,7 @@ case class TradeUpdated(
   takeProfitPrice: Option[Double],
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double]
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object TradeUpdated {
   implicit val decodeTradeUpdated: Decoder[TradeUpdated] = deriveDecoder
@@ -257,7 +263,7 @@ case class TradeClosed(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object TradeClosed {
   implicit val decodeTradeClosed: Decoder[TradeClosed] = deriveDecoder
@@ -275,7 +281,7 @@ case class MigrateTradeClosed(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object MigrateTradeClosed {
   implicit val decodeMigrateTradeClosed: Decoder[MigrateTradeClosed] = deriveDecoder
@@ -293,7 +299,7 @@ case class MigrateTradeOpened(
   stopLossPrice: Option[Double],
   trailingStopLossDistance: Option[Double],
   tradeOpened: TradeOpened
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object MigrateTradeOpened {
   implicit val decodeMigrateTradeOpened: Decoder[MigrateTradeOpened] = deriveDecoder
@@ -311,7 +317,7 @@ case class TakeProfitFilled(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object TakeProfitFilled {
   implicit val decodeTakeProfitFilled: Decoder[TakeProfitFilled] = deriveDecoder
@@ -329,7 +335,7 @@ case class StopLossFilled(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object StopLossFilled {
   implicit val decodeStopLossFilled: Decoder[StopLossFilled] = deriveDecoder
@@ -347,7 +353,7 @@ case class TrailingStopFilled(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object TrailingStopFilled {
   implicit val decodeTrailingStopFilled: Decoder[TrailingStopFilled] = deriveDecoder
@@ -385,7 +391,7 @@ case class MarginCloseoutTriggered(
   interest: Double,
   accountBalance: Double,
   tradeId: Long
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object MarginCloseoutTriggered {
   implicit val decodeMarginCloseoutTriggered: Decoder[MarginCloseoutTriggered] = deriveDecoder
@@ -422,7 +428,7 @@ case class DailyInterest(
   instrument: String,
   interest: Double,
   accountBalance: Double
-) extends OandaEvent
+) extends OandaEvent with InstrumentEvent
 
 object DailyInterest {
   implicit val decodeDailyInterest: Decoder[DailyInterest] = deriveDecoder

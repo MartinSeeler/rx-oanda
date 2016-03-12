@@ -23,13 +23,11 @@ import akka.http.scaladsl.coding._
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.headers.HttpEncodings.gzip
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.ThrottleMode
 import akka.stream.scaladsl.{Flow, Source}
 import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.Decoder
 import rx.oanda.errors.OandaError._
 import rx.oanda.errors.{OandaError, OandaException}
-import scala.concurrent.duration._
 
 import scala.util.{Failure, Success, Try}
 
@@ -39,7 +37,6 @@ trait ApiConnection {
 
   private[oanda] def makeRequest[R](req: HttpRequest)(implicit ev: Decoder[R]): Source[R, NotUsed] =
     Source.single(req → 42L).log("request")
-      .throttle(15, 1.second, 15, ThrottleMode.Shaping)
       .via(apiConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(OK, headers, entity, _)), _) if headers contains ContentEncoding.create(gzip) ⇒

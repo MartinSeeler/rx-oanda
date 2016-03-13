@@ -45,7 +45,7 @@ private[rates] object RatesClientRequests {
     * @return The request to use without headers.
     */
   def pricesRequest(instruments: Seq[String], since: Option[Long]): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(listParam("instruments", instruments) :: param("since", since) :: Nil)))
+    HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(listParam("instruments", instruments) :: optionalParam("since", since) :: Nil)))
 
   /**
     * Builds the request to get historical information for an instrument.

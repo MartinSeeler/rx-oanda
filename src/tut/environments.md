@@ -34,14 +34,14 @@ The **fxTrade Practice** environment is used for practicing, as the name suggest
 
 Use this environment to develop your trading robots / strategies / whatever, before you risk your real money. 
 
-```tut
+```tut:book
 val practiceEnv = TradePracticeEnvironment("your-token")
 ```
 
 
 When you're ready to risk your money and you feel comfortable enough, go ahead and use the **fxTrade** environment. But keep in mind: *you're trading with real money here!*
 
-```tut
+```tut:book
 val tradeEnv = TradeEnvironment("your-token")
 ```
 

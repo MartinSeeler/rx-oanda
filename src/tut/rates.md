@@ -93,37 +93,7 @@ ratesClient.allInstruments(accountId).
     }
 ```
 
-### Todo's
-
-The `pricesSince` endpoint seems to be broken, because the `since` parameter has no effect.
-
-
-The `interestRate` on `Instrument` should be added somehow, which has the following form:
-```json
-{
-  "instrument": "ZAR_JPY",
-  "displayName": "ZAR/JPY",
-  "pip": "0.01",
-  "precision": "0.001",
-  "maxTradeUnits": 10000000,
-  "maxTrailingStop": 10000,
-  "minTrailingStop": 5,
-  "marginRate": 0.02,
-  "halted": true,
-  "interestRate": {
-    "ZAR": { // base currency
-      "bid": 0.06,
-      "ask": 0.0718
-    },
-    "JPY": { // quote currency
-      "bid": -0.0015,
-      "ask": 0.0025
-    }
-  }
-}
-```
-
 ```tut:invisible
 import akka.http.scaladsl.Http
-Http().shutdownAllConnectionPools.onComplete(_ => system.shutdown())
+Http().shutdownAllConnectionPools.onComplete(_ => system.terminate())
 ```

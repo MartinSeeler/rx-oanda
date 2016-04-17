@@ -37,7 +37,7 @@ trait StreamingConnection {
       .via(streamingConnection).log("response")
       .flatMapConcat {
         case (Success(HttpResponse(StatusCodes.OK, header, entity, _)), _) ⇒
-          entity.dataBytes.log("bytes", _.utf8String)
+          entity.withSizeLimit(-1).dataBytes.log("bytes", _.utf8String)
             .via(CirceStreamSupport.decode(Decoder.decodeXor[R, Heartbeat](key, "heartbeat"))).log("decode")
         case (Success(HttpResponse(_, _, entity, _)), _) ⇒ entity.asErrorStream
         case (Failure(e), _) ⇒ Source.failed(e)

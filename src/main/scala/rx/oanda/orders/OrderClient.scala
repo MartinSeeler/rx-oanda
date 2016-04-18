@@ -22,6 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import rx.oanda.OandaEnvironment.ConnectionPool
 import rx.oanda.events.OandaEvent
+import rx.oanda.orders.OrderClient.OrderConfig
 import rx.oanda.orders.OrderClientRequests._
 import rx.oanda.utils.Side
 import rx.oanda.{ApiConnection, OandaEnvironment}
@@ -44,18 +45,41 @@ class OrderClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materia
   def orders(accountId: Long, instruments: Seq[String] = Nil, count: Int = 50, maxId: Option[Long] = None): Source[Order, NotUsed] =
     makeRequest[Vector[Order]](ordersRequest(accountId, instruments, Some(count), maxId, Nil).withHeaders(env.headers)).log("orders").mapConcat(identity).log("order")
 
-  def createMarketOrder(accountId: Long, instrument: String, units: Int, side: Side, lowerBound: Option[Double] = None, upperBound: Option[Double] = None, stopLoss: Option[Double] = None, takeProfit: Option[Double] = None, trailingStop: Option[Double] = None): Source[MarketOrder, NotUsed] =
-    makeRequest[MarketOrder](createOrderRequest(accountId, instrument, units, side, "market", None, None, lowerBound, upperBound, stopLoss, takeProfit, trailingStop).withHeaders(env.headers)).log("create-order")
-
-  def createLimitOrder(accountId: Long, instrument: String, units: Int, side: Side, expiry: Long, price: Double, lowerBound: Option[Double] = None, upperBound: Option[Double] = None, stopLoss: Option[Double] = None, takeProfit: Option[Double] = None, trailingStop: Option[Double] = None): Source[OandaEvent, NotUsed] =
-    makeRequest[OandaEvent](createOrderRequest(accountId, instrument, units, side, "limit", Some(expiry), Some(price), lowerBound, upperBound, stopLoss, takeProfit, trailingStop).withHeaders(env.headers)).log("create-order")
-
-  def createStopOrder(accountId: Long, instrument: String, units: Int, side: Side, expiry: Long, price: Double, lowerBound: Option[Double] = None, upperBound: Option[Double] = None, stopLoss: Option[Double] = None, takeProfit: Option[Double] = None, trailingStop: Option[Double] = None): Source[OandaEvent, NotUsed] =
-    makeRequest[OandaEvent](createOrderRequest(accountId, instrument, units, side, "stop", Some(expiry), Some(price), lowerBound, upperBound, stopLoss, takeProfit, trailingStop).withHeaders(env.headers)).log("create-order")
-
-  def createMarketIfTouchedOrder(accountId: Long, instrument: String, units: Int, side: Side, expiry: Long, price: Double, lowerBound: Option[Double] = None, upperBound: Option[Double] = None, stopLoss: Option[Double] = None, takeProfit: Option[Double] = None, trailingStop: Option[Double] = None): Source[OandaEvent, NotUsed] =
-    makeRequest[OandaEvent](createOrderRequest(accountId, instrument, units, side, "marketIfTouched", Some(expiry), Some(price), lowerBound, upperBound, stopLoss, takeProfit, trailingStop).withHeaders(env.headers)).log("create-order")
+  def createOrder(accountId: Long, orderConfig: OrderConfig): Source[MarketOrder, NotUsed] =
+    makeRequest[MarketOrder](createOrderRequest(accountId, orderConfig).withHeaders(env.headers)).log("create-order")
 
   def ordersById(accountId: Long, orders: Seq[Long]): Source[Order, Unit] = ???
+
+}
+object OrderClient {
+
+  case class OrderConfig(
+    instrument: String,
+    units: Int,
+    side: Side,
+    `type`: String,
+    expiry: Option[Long] = None,
+    price: Option[Double] = None,
+    lowerBound: Option[Double] = None,
+    upperBound: Option[Double] = None,
+    stopLoss: Option[Double] = None,
+    takeProfit: Option[Double] = None,
+    trailingStop: Option[Double] = None) {
+
+    def withExpiry(expiry: Long): OrderConfig = copy(expiry = Some(expiry))
+
+    def withLowerBound(lowerBound: Double): OrderConfig = copy(lowerBound = Some(lowerBound))
+    def withUpperBound(upperBound: Double): OrderConfig = copy(upperBound = Some(upperBound))
+
+    def withTakeProfit(takeProfit: Double): OrderConfig = copy(takeProfit = Some(takeProfit))
+    def withStopLoss(stopLoss: Double): OrderConfig = copy(stopLoss = Some(stopLoss))
+    def withTrailingStop(trailingStop: Double): OrderConfig = copy(trailingStop = Some(trailingStop))
+
+  }
+
+  def marketOrder(instrument: String, units: Int, side: Side): OrderConfig = OrderConfig(instrument, units, side, "market")
+  def limitOrder(instrument: String, units: Int, side: Side, expiry: Long, price: Double): OrderConfig = OrderConfig(instrument, units, side, "limit", expiry = Some(expiry), price = Some(price))
+  def stopOrder(instrument: String, units: Int, side: Side, expiry: Long, price: Double): OrderConfig = OrderConfig(instrument, units, side, "stop", expiry = Some(expiry), price = Some(price))
+  def marketIfTouchedOrder(instrument: String, units: Int, side: Side, expiry: Long, price: Double): OrderConfig = OrderConfig(instrument, units, side, "marketIfTouched", expiry = Some(expiry), price = Some(price))
 
 }

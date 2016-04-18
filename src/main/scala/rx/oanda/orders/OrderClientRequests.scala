@@ -20,6 +20,7 @@ import akka.http.scaladsl.model.HttpCharsets.`UTF-8`
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.MediaTypes.`application/x-www-form-urlencoded`
 import akka.http.scaladsl.model._
+import rx.oanda.orders.OrderClient.OrderConfig
 import rx.oanda.utils.Side
 
 private[orders] object OrderClientRequests {
@@ -42,29 +43,17 @@ private[orders] object OrderClientRequests {
   /**
     * Builds the request to create a new order.
     *
-    * @param accountId    The account to open the order on.
-    * @param instrument   The instrument to open the order on.
-    * @param units        The number of units to buy or sell.
-    * @param side         The direction of the order, either ‘buy’ or ‘sell’.
-    * @param `type`       The type of the order: ‘limit’, ‘stop’, ‘marketIfTouched’ or ‘market’.
-    * @param expiry       If order type is ‘limit’, ‘stop’, or ‘marketIfTouched’.
-    *                     The order expiration time in UTC. The value specified must be in a valid datetime format.
-    * @param price        If order type is ‘limit’, ‘stop’, or ‘marketIfTouched’.
-    *                     The price where the order is set to trigger at.
-    * @param lowerBound   Optional the minimum execution price.
-    * @param upperBound   Optional the maximum execution price.
-    * @param stopLoss     Optional the stop loss price.
-    * @param takeProfit   Optional the take profit price.
-    * @param trailingStop Optional the trailing stop price.
+    * @param accountId   The account to open the order on.
+    * @param orderConfig The configuration settings for this order with all necessary values.
     * @return The request to use, without headers.
     */
-  def createOrderRequest(accountId: Long, instrument: String, units: Int, side: Side, `type`: String, expiry: Option[Long], price: Option[Double], lowerBound: Option[Double], upperBound: Option[Double], stopLoss: Option[Double], takeProfit: Option[Double], trailingStop: Option[Double]): HttpRequest =
+  def createOrderRequest(accountId: Long, orderConfig: OrderConfig): HttpRequest =
     HttpRequest(POST, Uri(s"/v1/accounts/$accountId/orders"), entity = HttpEntity(rawQueryStringOf(
-      param("instrument", instrument) :: param("units", units)
-        :: param("type", `type`) :: param("side", side.toString.toLowerCase)
-        :: optionalParam("expiry", expiry) :: optionalParam("price", price)
-        :: optionalParam("lowerBound", lowerBound) :: optionalParam("upperBound", upperBound)
-        :: optionalParam("stopLoss", stopLoss) :: optionalParam("takeProfit", takeProfit) :: optionalParam("trailingStop", trailingStop) :: Nil
+      param("instrument", orderConfig.instrument) :: param("units", orderConfig.units)
+        :: param("type", orderConfig.`type`) :: param("side", orderConfig.side.toString.toLowerCase)
+        :: optionalParam("expiry", orderConfig.expiry) :: optionalParam("price", orderConfig.price)
+        :: optionalParam("lowerBound", orderConfig.lowerBound) :: optionalParam("upperBound", orderConfig.upperBound)
+        :: optionalParam("stopLoss", orderConfig.stopLoss) :: optionalParam("takeProfit", orderConfig.takeProfit) :: optionalParam("trailingStop", orderConfig.trailingStop) :: Nil
     )).withContentType(ContentType(`application/x-www-form-urlencoded`, `UTF-8`)))
 
 }

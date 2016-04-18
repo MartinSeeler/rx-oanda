@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import akka.stream.testkit.scaladsl.TestSink
 import cats.data.Xor
@@ -23,11 +23,11 @@ import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
 import rx.oanda.utils.Heartbeat
 
-class RatesClientStreamingSpec extends FlatSpec with PropertyChecks with Matchers with FakeRateStreamingEndpoints {
+class PricesClientStreamingSpec extends FlatSpec with PropertyChecks with Matchers with FakePriceStreamingEndpoints {
 
-  behavior of "The RatesClient"
+  behavior of "The PricesClient"
 
-  val testClient = new RatesClient(OandaEnvironment.TradePracticeEnvironment("token"))
+  val testClient = new PricesClient(OandaEnvironment.TradePracticeEnvironment("token"))
 
   it must "stream prices and heartbeats with authentication" in {
     testClient.livePrices(8954946L, "AUD_CAD" :: "AUD_CHF" :: Nil)

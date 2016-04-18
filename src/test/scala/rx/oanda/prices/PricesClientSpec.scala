@@ -14,42 +14,20 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import akka.stream.testkit.scaladsl.TestSink
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
 import rx.oanda.OandaEnvironment
-import rx.oanda.rates.candles.{BidAskCandle, CandleTypes, MidpointCandle}
+import rx.oanda.instruments.Instrument
+import rx.oanda.prices.candles.{BidAskCandle, CandleTypes, MidpointCandle}
 
-class RatesClientSpec extends FlatSpec with PropertyChecks with Matchers with FakeRateEndpoints {
+class PricesClientSpec extends FlatSpec with PropertyChecks with Matchers with FakePriceEndpoints {
 
-  behavior of "The RatesClient"
+  behavior of "The PricesClient"
 
-  val authClient = new RatesClient(OandaEnvironment.TradePracticeEnvironment("token"))
-
-  it must "retrieve all instruments with authentication" in {
-    authClient.allInstruments(8954946L)
-      .runWith(TestSink.probe[Instrument])
-      .requestNext(Instrument("AUD_CAD", "AUD/CAD", 0.0001, 0.00001, 10000000, 10000, 5, 0.02, halted = true))
-      .requestNext(Instrument("AUD_CHF", "AUD/CHF", 0.0001, 0.00001, 10000000, 10000, 5, 0.02, halted = true))
-      .expectComplete()
-  }
-
-  it must "retrieve specific instruments with authentication" in {
-    authClient.instruments(8954946L, "AUD_CAD" :: "AUD_CHF" :: Nil)
-      .runWith(TestSink.probe[Instrument])
-      .requestNext(Instrument("AUD_CAD", "AUD/CAD", 0.0001, 0.00001, 10000000, 10000, 5, 0.02, halted = true))
-      .requestNext(Instrument("AUD_CHF", "AUD/CHF", 0.0001, 0.00001, 10000000, 10000, 5, 0.02, halted = true))
-      .expectComplete()
-  }
-
-  it must "retrieve a specific instrument with authentication" in {
-    authClient.instrument(8954946L, "AUD_CAD")
-      .runWith(TestSink.probe[Instrument])
-      .requestNext(Instrument("AUD_CAD", "AUD/CAD", 0.0001, 0.00001, 10000000, 10000, 5, 0.02, halted = true))
-      .expectComplete()
-  }
+  val authClient = new PricesClient(OandaEnvironment.TradePracticeEnvironment("token"))
 
   it must "retrieve prices for a specific instrument with authentication" in {
     authClient.price("EUR_USD")

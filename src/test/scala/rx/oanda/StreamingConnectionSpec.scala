@@ -29,7 +29,7 @@ import akka.util.ByteString
 import cats.data.Xor
 import org.scalatest._
 import rx.oanda.errors.{InvalidInstrument, OandaException}
-import rx.oanda.rates.Price
+import rx.oanda.prices.Price
 import rx.oanda.utils.Heartbeat
 
 import scala.concurrent.Future

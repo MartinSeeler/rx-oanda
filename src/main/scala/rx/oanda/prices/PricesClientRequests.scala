@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.{HttpRequest, Uri}
-import rx.oanda.rates.candles.{CandleGranularity, CandleTypes}
+import rx.oanda.prices.candles.{CandleGranularity, CandleTypes}
 import rx.oanda.utils.QueryHelper._
 
-private[rates] object RatesClientRequests {
-
-  /**
-    * Builds the rquest to get a list of tradeable instruments (currency pairs, CFDs, and commodities)
-    * that are available for trading with the account specified.
-    *
-    * @param accountId   The account id to fetch the list of tradeable instruments for.
-    * @param instruments A list of instrument codes that are to be returned in the response.
-    *                    If the list is empty, all instruments will be returned.
-    * @return The request to use without headers.
-    */
-  def instrumentsRequest(accountId: Long, instruments: Seq[String]): HttpRequest =
-    HttpRequest(GET, Uri(s"/v1/instruments").withRawQueryString(rawQueryStringOf(param("accountId", accountId) :: listParam("instruments", instruments) :: fieldsQuery :: Nil)))
+private[prices] object PricesClientRequests {
 
   /**
     * Builds the request to fetch live prices for specified instruments.
@@ -89,19 +77,5 @@ private[rates] object RatesClientRequests {
     */
   def pricesStreamRequest(accountId: Long, instruments: Seq[String], sessionId: Option[String]): HttpRequest =
     HttpRequest(GET, Uri(s"/v1/prices").withRawQueryString(rawQueryStringOf(param("accountId", accountId) :: listParam("instruments", instruments) :: optionalParam("sessionId", sessionId) :: Nil)))
-
-  val instrumentFields = Seq(
-    "displayName",
-    "halted",
-    "interestRate",
-    "marginRate",
-    "maxTradeUnits",
-    "maxTrailingStop",
-    "minTrailingStop",
-    "pip",
-    "precision"
-  )
-
-  val fieldsQuery = s"fields=${instrumentFields.mkString("%2C")}"
 
 }

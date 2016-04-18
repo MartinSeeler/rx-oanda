@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -22,51 +22,18 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import cats.data.Xor
 import rx.oanda.OandaEnvironment.ConnectionPool
-import rx.oanda.rates.RatesClientRequests._
-import rx.oanda.rates.candles.CandleGranularities.S5
-import rx.oanda.rates.candles.{CandleGranularity, CandleTypes}
+import rx.oanda.instruments.Instrument
+import rx.oanda.prices.PricesClientRequests._
+import rx.oanda.prices.candles.CandleGranularities.S5
+import rx.oanda.prices.candles.{CandleGranularity, CandleTypes}
 import rx.oanda.utils.Heartbeat
 import rx.oanda.{ApiConnection, OandaEnvironment, StreamingConnection}
 
-class RatesClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool)
+class PricesClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materializer, A: ConnectionPool)
   extends ApiConnection with StreamingConnection {
 
   private[oanda] val streamingConnection = env.streamFlow[Long]
   private[oanda] val apiConnection = env.apiFlow[Long]
-
-  /**
-    * Get all tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.
-    *
-    * @param accountId The account id to fetch the list of tradeable instruments for.
-    * @return A source which emits all available `Instrument`s.
-    */
-  def allInstruments(accountId: Long): Source[Instrument, NotUsed] =
-    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, Nil).withHeaders(env.headers))
-      .log("instruments").mapConcat(identity).log("instrument")
-
-  /**
-    * Get a list of tradeable instruments (currency pairs, CFDs, and commodities) that are available for trading with the account specified.
-    *
-    * @param accountId   The account id to fetch the list of tradeable instruments for.
-    * @param instruments A list of instruments that are to be returned.
-    *                    If the list is empty, all instruments will be returned.
-    * @return A source which emits the requested `Instrument`s.
-    */
-  def instruments(accountId: Long, instruments: Seq[String]): Source[Instrument, NotUsed] =
-    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instruments).withHeaders(env.headers))
-      .log("instruments").mapConcat(identity).log("instrument")
-
-  /**
-    * Get a specific instruments (currency pairs, CFDs, and commodities) that is available for trading with the account specified.
-    *
-    * @param accountId  The account id to fetch the tradeable instrument for.
-    * @param instrument Name of the instrument to retrieve history for.
-    *                   The value should be one of the available instrument codes from `instruments`.
-    * @return A source which emits the single `Instrument`.
-    */
-  def instrument(accountId: Long, instrument: String): Source[Instrument, NotUsed] =
-    makeRequest[Vector[Instrument]](instrumentsRequest(accountId, instrument :: Nil).withHeaders(env.headers))
-      .log("instruments").mapConcat(identity).log("instrument")
 
   /**
     * Fetch prices for specified instruments that are available on the OANDA platform.

@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates.candles
+package rx.oanda.prices.candles
 
 import io.circe.Decoder
-import io.circe.generic.semiauto._
 
-case class MidpointCandle(
-  time: Long,
-  openMid: Double,
-  highMid: Double,
-  lowMid: Double,
-  closeMid: Double,
-  volume: Long,
-  complete: Boolean
-)
+sealed trait CandleType {
 
-object MidpointCandle {
+  type R
+  def decoder: Decoder[Vector[R]]
+  def uriParam: String
 
-  implicit val decodeMidpointCandle: Decoder[MidpointCandle] = deriveDecoder
+}
 
-  implicit val decodeMidpointCandles =
-    Decoder.instance(_.get[Vector[MidpointCandle]]("candles"))
+object CandleTypes {
+
+  type Aux[R0] = CandleType { type R = R0 }
+
+  val Midpoint: Aux[MidpointCandle] = new CandleType {
+    type R = MidpointCandle
+    def decoder: Decoder[Vector[MidpointCandle]] = MidpointCandle.decodeMidpointCandles
+    def uriParam: String = "midpoint"
+  }
+
+  val BidAsk: Aux[BidAskCandle] = new CandleType {
+    type R = BidAskCandle
+    def decoder: Decoder[Vector[BidAskCandle]] = BidAskCandle.decodeBidAskCandles
+    def uriParam: String = "bidask"
+  }
+
 }

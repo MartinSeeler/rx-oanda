@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -30,7 +30,7 @@ import rx.oanda.OandaEnvironment.ConnectionPool
 import scala.concurrent.Future
 import scala.util.Try
 
-trait FakeRateStreamingEndpoints extends FlatSpec with BeforeAndAfterAll {
+trait FakePriceStreamingEndpoints extends FlatSpec with BeforeAndAfterAll {
 
   implicit val system = ActorSystem("fake-rate-streaming-endpoints")
   implicit val mat = ActorMaterializer()

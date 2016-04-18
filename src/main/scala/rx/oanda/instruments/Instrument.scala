@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates.candles
+package rx.oanda.instruments
 
 import io.circe.Decoder
 import io.circe.generic.semiauto._
 
-case class BidAskCandle(
-  time: Long,
-  openBid: Double,
-  openAsk: Double,
-  highBid: Double,
-  highAsk: Double,
-  lowBid: Double,
-  lowAsk: Double,
-  closeBid: Double,
-  closeAsk: Double,
-  volume: Long,
-  complete: Boolean
+case class Instrument(
+  instrument: String,
+  displayName: String,
+  pip: Double,
+  precision: Double,
+  maxTradeUnits: Int,
+  maxTrailingStop: Double,
+  minTrailingStop: Double,
+  marginRate: Double,
+  halted: Boolean
 )
 
-object BidAskCandle {
+object Instrument {
 
-  implicit val decodeBidAskCandle: Decoder[BidAskCandle] = deriveDecoder
+  implicit val decodeInstrument: Decoder[Instrument] =
+    deriveDecoder
 
-  implicit val decodeBidAskCandles =
-    Decoder.instance(_.get[Vector[BidAskCandle]]("candles"))
+  implicit val decodeInstruments =
+    Decoder.instance(_.get[Vector[Instrument]]("instruments"))
 
 }

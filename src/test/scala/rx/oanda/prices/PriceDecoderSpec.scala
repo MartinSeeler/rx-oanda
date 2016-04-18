@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates
+package rx.oanda.prices
 
 import cats.data.Xor
 import io.circe.DecodingFailure

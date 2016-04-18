@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.oanda.rates.candles
+package rx.oanda.prices.candles
 
 sealed trait CandleGranularity
 

@@ -41,6 +41,16 @@ private[orders] object OrderClientRequests {
     HttpRequest(GET, Uri(s"/v1/accounts/$accountId/orders").withRawQueryString(rawQueryStringOf(listParam("instruments", instruments) :: optionalParam("count", count) :: optionalParam("maxId", maxId) :: listParam("ids", ids) :: Nil)))
 
   /**
+    * Builds the request to close a single order by it's id.
+    *
+    * @param accountId The account where to order was placed.
+    * @param orderId   The id of the order to close.
+    * @return The request to use without headers.
+    */
+  def closeOrderRequest(accountId: Long, orderId: Long): HttpRequest =
+    HttpRequest(DELETE, Uri(s"/v1/accounts/$accountId/orders/$orderId"))
+
+  /**
     * Builds the request to create a new order.
     *
     * @param accountId   The account to open the order on.

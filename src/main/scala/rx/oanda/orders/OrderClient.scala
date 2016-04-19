@@ -48,6 +48,9 @@ class OrderClient(env: OandaEnvironment)(implicit sys: ActorSystem, mat: Materia
   def createOrder(accountId: Long, orderConfig: OrderConfig): Source[MarketOrder, NotUsed] =
     makeRequest[MarketOrder](createOrderRequest(accountId, orderConfig).withHeaders(env.headers)).log("create-order")
 
+  def closeOrder(accountId: Long, orderId: Long): Source[ClosedOrder, NotUsed] =
+    makeRequest[ClosedOrder](closeOrderRequest(accountId, orderId).withHeaders(env.headers)).log("close-order")
+
   def ordersById(accountId: Long, orders: Seq[Long]): Source[Order, Unit] = ???
 
 }

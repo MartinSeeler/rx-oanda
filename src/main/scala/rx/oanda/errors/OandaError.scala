@@ -34,6 +34,8 @@ object OandaError {
       case 2 ⇒ c.as[MissingArgument]
       case 3 ⇒ c.as[MissingAuthorization]
       case 4 ⇒ c.as[InvalidAuhtorization]
+      case 14 ⇒ c.as[PositionNotFound]
+      case 15 ⇒ c.as[MaxOpenTradesReached]
       case 34 ⇒ c.as[InvalidTakeProfit]
       case 36 ⇒ c.as[InvalidRange]
       case 40 ⇒ c.as[MalformedQueryString]
@@ -89,6 +91,18 @@ case class InvalidAuhtorization(message: String) extends OandaError
 
 object InvalidAuhtorization {
   implicit val decodeInvalidAuhtorization: Decoder[InvalidAuhtorization] = deriveDecoder
+}
+
+case class PositionNotFound(message: String) extends OandaError
+
+object PositionNotFound {
+  implicit val decodePositionNotFound: Decoder[PositionNotFound] = deriveDecoder
+}
+
+case class MaxOpenTradesReached(message: String) extends OandaError
+
+object MaxOpenTradesReached {
+  implicit val decodeMaxOpenTradesReached: Decoder[MaxOpenTradesReached] = deriveDecoder
 }
 
 case class RateLimitViolation(message: String) extends OandaError

@@ -5,9 +5,9 @@ import sbtrelease.ReleaseStateTransformations._
 name := "rx-oanda"
 scalaVersion := "2.11.8"
 
-val akkaStreamV = "2.4.4"
-val akkaHttpV = "2.4.4"
-val circeV = "0.3.0"
+val akkaStreamV = "2.4.8"
+val akkaHttpV = "2.4.8"
+val circeV = "0.4.1"
 val streamCirceV = "3.0.0"
 val scalaTestV = "2.2.6"
 val scalaCheckV = "1.12.5"

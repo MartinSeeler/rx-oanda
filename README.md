@@ -63,17 +63,17 @@ An [Instrument](http://www.investopedia.com/terms/i/instrument.asp) is either a 
 
 ```scala
 ratesClient.allInstruments(accountId)
-// res0: akka.stream.scaladsl.Source[rx.oanda.rates.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@332d4686
+// res0: akka.stream.scaladsl.Source[rx.oanda.instruments.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@332d4686
 ```
 
 If we're only interested in specific instruments, there are some more methods available.
 
 ```scala
 ratesClient.instruments(accountId, List("EUR_USD", "EUR_GBP", "GBP_USD"))
-// res1: akka.stream.scaladsl.Source[rx.oanda.rates.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@49f148be
+// res1: akka.stream.scaladsl.Source[rx.oanda.instruments.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@49f148be
 
 ratesClient.instrument(accountId, "EUR_USD")
-// res2: akka.stream.scaladsl.Source[rx.oanda.rates.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@7812324e
+// res2: akka.stream.scaladsl.Source[rx.oanda.instruments.Instrument,akka.NotUsed] = akka.stream.scaladsl.Source@7812324e
 ```
 
 Most of the other methods (also in other clients) will require an instrument code, which can be found at the instrument's field `instrument`.

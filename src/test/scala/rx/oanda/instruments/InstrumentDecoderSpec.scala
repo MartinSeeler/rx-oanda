@@ -23,46 +23,7 @@ import org.scalatest._
 
 class InstrumentDecoderSpec extends FlatSpec with Matchers {
 
-  behavior of "The Instrument Decoder"
 
-  it must "parse an instrument from valid json" in {
-    val json =
-      """
-        |{
-        | "instrument": "AUD_CAD",
-        | "displayName": "AUD\/CAD",
-        | "pip": "0.0001",
-        | "precision": "0.00001",
-        | "maxTradeUnits": 200,
-        | "maxTrailingStop": 10000,
-        | "minTrailingStop": 5,
-        | "marginRate": 0.02,
-        | "halted": true
-        |}
-      """.stripMargin
-    decode[Instrument](json) should matchPattern {
-      case Xor.Right(Instrument("AUD_CAD", "AUD/CAD", 0.0001, 0.00001, 200, 10000, 5, 0.02, true)) ⇒
-    }
-  }
-
-  it must "fail when a property is missing" in {
-    val json =
-      """
-        |{
-        | "instrument": "AU200_AUD",
-        | "displayName": "Australia 200",
-        | "pip": "1.0",
-        | "precision": "0.1",
-        | "maxTradeUnits": 200,
-        | "minTrailingStop": 5,
-        | "marginRate": 0.02,
-        | "halted": true
-        |}
-      """.stripMargin
-    decode[Instrument](json) should matchPattern {
-      case Xor.Left(e: DecodingFailure) ⇒ //...
-    }
-  }
 
   it must "parse a list of instruments from valid json" in {
     val json =

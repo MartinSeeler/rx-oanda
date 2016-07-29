@@ -22,7 +22,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import cats.data.Xor
 import rx.oanda.OandaEnvironment.ConnectionPool
-import rx.oanda.instruments.Instrument
 import rx.oanda.prices.PricesClientRequests._
 import rx.oanda.prices.candles.CandleGranularities.S5
 import rx.oanda.prices.candles.{CandleGranularity, CandleTypes}

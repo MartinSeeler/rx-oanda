@@ -1,0 +1,6 @@
+--maxColumn 160
+--javaDocs
+--spacesInImportCurlyBraces true
+--continuationIndentCallSite 2
+--assumeStandardLibraryStripMargin false
+--alignTokens {;Template,};Template,extends;Defn.(Class|Trait|Object),%;Term.ApplyInfix,%%;Term.ApplyInfix,=>;Case,<-;Enumerator.Generator,->;Term.ApplyInfix,=;(Enumerator.Val|Defn.(Va(l|r)|Def|Type)),:;Type.Name,//;.*

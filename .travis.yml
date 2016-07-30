@@ -1,34 +1,33 @@
 language: scala
 sudo: false
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 scala:
-  - 2.11.7
-
+- 2.11.7
 cache:
   directories:
-    - $HOME/.m2/repository
-    - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot/
-    - $HOME/.sbt/launchers/
-
+  - "$HOME/.m2/repository"
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot/"
+  - "$HOME/.sbt/launchers/"
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION travis
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-
+- sbt ++$TRAVIS_SCALA_VERSION travis
+- find $HOME/.sbt -name "*.lock" | xargs rm
+- find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
 before_install:
-  - pip install --user codecov
-
+- pip install --user codecov
 after_success:
-  - codecov
-
+- codecov
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/6eea01bcae75827ce19a
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
+    - https://webhooks.gitter.im/e/6eea01bcae75827ce19a
+    on_success: always
+    on_failure: always
+    on_start: never
+  slack:
+    rooms:
+      secure: bAP8Is9l0VWwx/VLpwGATx/gOPe1T5Pg/0gbSbreeSSuufhECgBKxkt8RSLX/S28rcR2yyy+2YpIlUxCLQDd0Xqs8q1XY1j34Dc/rsIb9Jv+UKCCQK3mTqOIGXdjG8Oy+ufNZyfWsL/n/2arXO/nryDlZHqJSKBBAQIgPjUeqBSdPX4oeQJl8hsff/bd+tQRkYp8QQq6MWd1OzeDaUxTwgbZCjKpBs2L4IY49Au+j1JBT6m6eAh/M52E6MxTXhDKnTBlQZThjFeZ0dNMeAZwaMoX0VQ3muZCZc9lpVH3sK4WrL1lP1HlrBeyDyt8CdZ6tin3rEaiwy/bBtumQJwKTTlUp8Yr3buDE+BjNcG/7czcT0vdPicodRSoC2kHUjfGgqxqrHsMSWv+zfd9ti8Yxs9HckIjF2/dHXBKH6ZvjPcUu0JTCu0+N0w54Wf/wpWyZwZCJYNNOdcFQrZyP5n5JU/vOdroLtL5RkfzlmzykIWElaO1F03S8bqInlSMMvhBmKdtFrFi7C+dhXQSeG+kCXfH/4ZVBSQwou5+zRMRxGncVFXsb65qqnqXkXa7k6vfkQHeAgoHgqs1Xbi3TYlHMoIF5pfEVy4ewC7Tbx3Lezvhe5P+qQdOIuOUFDVM27Mjmt+4PhUBgl81W4YSZ1mGxS3T6TW5ijxBwBEfwK+4M+Y=
+    on_success: always
+    on_failure: always
+    on_start: always

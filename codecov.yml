@@ -7,7 +7,6 @@ coverage:
         url: secret:8dESiEjdqyDXpd094u5kgD4vRvHLCOPjJAclrG6DVSMC+y8goM1p6UhNHJvYyB+iVAjwvoGZACna+lq+Vm08asxc2mwm5Ina5GlLuDYLTijU07/nqwPUuTUqYLOn6envODqB0vKuM73dEwtGI/M1dXbCHhWI6uzMsev0m/xUJUo=
         threshold: 0%
         branches: null
-        message: "Coverage {{changed}} for {{owner}}/{{repo}}"
         attachments: "sunburst, diff"
     gitter:
       default:

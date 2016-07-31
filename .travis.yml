@@ -14,7 +14,6 @@ script:
 - sbt ++$TRAVIS_SCALA_VERSION travis
 - find $HOME/.sbt -name "*.lock" | xargs rm
 - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
-- sbt clean coverage test
 before_install:
 - pip install --user codecov
 after_success:

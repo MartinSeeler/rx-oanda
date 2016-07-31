@@ -77,6 +77,8 @@ releaseProcess := List[ReleaseStep](
   commitNextVersion
 )
 
+coverageEnabled := true
+
 lazy val publishSignedArtifacts = ReleaseStep(
   action = Command.process("publishSigned", _),
   enableCrossBuild = true
